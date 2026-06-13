@@ -1,0 +1,150 @@
+name: Bot Mundial 2026
+
+on:
+  schedule:
+    # ─── EN VIVO: cada 10 min SOLO en franja de partidos ──────────────────────
+    # Partidos del Mundial: ~16hs a 3am AR = 19:00 a 06:00 UTC
+    # Cada 10 min en vez de 5 → la mitad de runs, sigue detectando todo gol
+    - cron: "*/10 19-23 * * *"   # 16:00-20:00 AR
+    - cron: "*/10 0-6   * * *"   # 21:00-03:00 AR
+    # ─── PROGRAMADOS (1 run c/u por día) ──────────────────────────────────────
+    - cron: "0 12 * * *"   # 09:00 AR — fixture del día
+    - cron: "0 11 * * *"   # 08:00 AR — dato curioso
+    - cron: "0 1  * * *"   # 22:00 AR — tabla del grupo
+    - cron: "0 13 * * *"   # 10:00 AR — recordatorio
+
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "Modo del bot"
+        required: true
+        default: "en_vivo"
+        type: choice
+        options:
+          - en_vivo
+          - fixture_dia
+          - tabla_grupo
+          - dato_curioso
+          - recordatorio
+          - formaciones
+      preview:
+        description: "Solo preview (no publica)"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: En vivo
+        if: |
+          github.event_name == 'schedule' &&
+          (startsWith(github.event.schedule, '*/10'))
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: |
+          python bot.py formaciones
+          python bot.py en_vivo
+
+      - name: Fixture del dia
+        if: github.event_name == 'schedule' && github.event.schedule == '0 12 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py fixture_dia
+
+      - name: Dato curioso
+        if: github.event_name == 'schedule' && github.event.schedule == '0 11 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py dato_curioso
+
+      - name: Tabla del grupo
+        if: github.event_name == 'schedule' && github.event.schedule == '0 1 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py tabla_grupo
+
+      - name: Recordatorio
+        if: github.event_name == 'schedule' && github.event.schedule == '0 13 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py recordatorio
+
+      - name: Manual
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: |
+          PREVIEW_FLAG=""
+          if [ "${{ github.event.inputs.preview }}" = "true" ]; then
+            PREVIEW_FLAG="--preview"
+          fi
+          python bot.py ${{ github.event.inputs.modo }} $PREVIEW_FLAG

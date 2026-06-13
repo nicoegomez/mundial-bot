@@ -1,1 +1,8 @@
-﻿{ "eventos_procesados": [], "ultimo_run": null, "tweets_hoy": 0 }
+{
+  "eventos_procesados": [
+    "dato_curioso_2026-06-13"
+  ],
+  "ultimo_run": "2026-06-13T03:34:02.129359+00:00",
+  "partidos_monitoreados": [],
+  "tweets_hoy": 1
+}

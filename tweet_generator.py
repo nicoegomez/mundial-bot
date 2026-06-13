@@ -1,7 +1,9 @@
 """
-tweet_generator.py — Genera tweets con Claude para cada tipo de evento del Mundial
+tweet_generator.py — Genera tweets con Claude para el Mundial 2026
+Tono: periodístico argentino, apasionado pero con rigor. Sin informalidad extrema.
 """
 
+import re
 import json
 import logging
 import anthropic
@@ -12,24 +14,25 @@ MODEL = "claude-sonnet-4-6"
 MAX_TOKENS = 400
 
 ESTILO_BASE = """
-Sos un periodista deportivo argentino que cubre el Mundial 2026 en tiempo real para X (Twitter).
-Tu estilo:
-- Lenguaje rioplatense natural, apasionado pero con rigor periodístico
-- Incluís siempre el dato estadístico más relevante del momento
-- Nunca más de 280 caracteres. Apuntá a 240-250 para tener margen seguro.
-- Sin hashtags (excepto #Mundial2026 cuando sea muy relevante)
-- Máximo 2 emojis por tweet, bien elegidos
-- El marcador siempre visible cuando hay goles
-- Contexto histórico cuando sea posible (récords, comparaciones, "por primera vez")
-- Si es un partido que afecta a Argentina, lo aclarás aunque no juegue
+Sos un periodista deportivo argentino que cubre el Mundial 2026 para X (Twitter).
+Tu voz: apasionada pero con rigor periodístico, con la cadencia del Río de la Plata,
+sin caer en informalidad excesiva ni en exceso de modismos. Profesional y cercano.
 
-REGLAS DE FORMATO ESTRICTAS (MUY IMPORTANTE):
-- Respondé ÚNICAMENTE con el texto del tweet, nada más.
-- NO uses prefijos como "TWEET:", "Tweet:", ni encabezados de ningún tipo.
-- NO uses markdown: nada de asteriscos (**negrita** o *itálica*), nada de guiones separadores (---).
-- NO agregues comentarios sobre la cantidad de caracteres.
+Reglas de estilo:
+- Lenguaje rioplatense natural (vos, podés, tenés), pero serio y creíble
+- Siempre incluís el dato más relevante: marcador, goleador, estadística, contexto
+- Nunca más de 280 caracteres. Apuntá a 240-250 para tener margen seguro.
+- Contexto histórico cuando sume (récords, comparaciones, antecedentes mundialistas)
+- Foco en Argentina cuando corresponda, aunque no sea protagonista del partido
+- Máximo 2 emojis bien elegidos
+
+REGLAS DE FORMATO ESTRICTAS:
+- Respondé SOLO con el texto del tweet, nada más.
+- NO uses prefijos tipo "TWEET:", ni encabezados.
+- NO uses markdown: nada de asteriscos, negritas, ni guiones separadores (---).
+- NO comentes la cantidad de caracteres.
 - NO uses comillas envolviendo el tweet.
-- Escribí el tweet como aparecería publicado directamente en X, en texto plano.
+- Texto plano, como aparecería publicado directamente en X.
 """
 
 
@@ -38,19 +41,15 @@ class TweetGenerator:
         self.client = anthropic.Anthropic(api_key=api_key)
 
     def _generar(self, system_extra: str, datos: dict) -> str:
-        """Genera un tweet dado el contexto del evento."""
         system = ESTILO_BASE + "\n" + system_extra
-        user   = json.dumps(datos, ensure_ascii=False, indent=2)
-
+        user = json.dumps(datos, ensure_ascii=False, indent=2)
         try:
             resp = self.client.messages.create(
-                model=MODEL,
-                max_tokens=MAX_TOKENS,
+                model=MODEL, max_tokens=MAX_TOKENS,
                 system=system,
                 messages=[{"role": "user", "content": user}],
             )
-            tweet = resp.content[0].text.strip()
-            tweet = self._limpiar(tweet)
+            tweet = self._limpiar(resp.content[0].text.strip())
             log.info(f"Tweet generado ({len(tweet)} chars): {tweet[:60]}...")
             return tweet
         except Exception as e:
@@ -59,237 +58,81 @@ class TweetGenerator:
 
     @staticmethod
     def _limpiar(texto: str) -> str:
-        """Quita prefijos, markdown y artefactos que X muestra como texto literal."""
-        import re
         t = texto.strip()
-
-        # Quitar prefijos tipo "TWEET:", "**TWEET:**", "Tweet:", etc. al inicio
         t = re.sub(r'^\**\s*tweet\s*:?\s*\**\s*', '', t, flags=re.IGNORECASE)
-
-        # Quitar comillas envolventes
         t = t.strip().strip('"').strip("'").strip()
-
-        # Quitar negritas/itálicas de markdown: **texto** o *texto* → texto
         t = re.sub(r'\*\*([^*]+)\*\*', r'\1', t)
         t = re.sub(r'\*([^*]+)\*', r'\1', t)
-
-        # Quitar separadores tipo "---" en líneas sueltas
         t = re.sub(r'\n-{2,}\n', '\n', t)
         t = re.sub(r'^\s*-{2,}\s*$', '', t, flags=re.MULTILINE)
-
-        # Quitar comentarios de longitud que a veces agrega: "(278 caracteres...)"
         t = re.sub(r'\n*\*?\(?\d+\s*caracteres?[^)]*\)?\*?\s*$', '', t, flags=re.IGNORECASE)
-
         return t.strip()
 
-    # ── EVENTOS EN VIVO ───────────────────────────────────────────────────────
+    # ── RESUMEN DE PARTIDO ────────────────────────────────────────────────────
 
-    def tweet_gol(self, datos: dict) -> str:
-        """
-        datos: marcador, minuto, goleador, asistidor, stats_goleador_torneo,
-               estadisticas_partido, es_argentina, contexto_historico
-        """
+    def tweet_resumen_partido(self, datos: dict) -> str:
         return self._generar("""
-Acaba de convertirse un GOL. Tu tweet debe incluir:
-1. El marcador actualizado de forma clara (ej: "Argentina 2-0 Francia")
-2. Quién hizo el gol y en qué minuto
-3. Un dato estadístico potente: goles del jugador en el torneo, si es récord, 
-   si es el primero del equipo en el Mundial, asistencias en el torneo, etc.
-4. Si afecta la clasificación de Argentina aunque no juegue, mencionalo.
-El tono es el de alguien que está viendo el partido en vivo y se emociona con el dato.
+Acaba de terminar un partido del Mundial. Generá un tweet de cierre que incluya:
+1. El resultado final claro (marcador)
+2. Los goleadores con el minuto (si los datos los traen)
+3. Un dato o lectura del partido: qué significa, cómo cambia el grupo
+4. Si es Argentina, prioridad total. Si no, una lectura con criterio.
+5. Si el resultado afecta indirectamente a Argentina, mencionalo.
+Tono: el de un periodista que cierra la transmisión con un resumen filoso.
 """, datos)
 
-    def tweet_penal(self, datos: dict) -> str:
-        """
-        datos: marcador, minuto, ejecutor, resultado (gol/errado/atajado),
-               arquero si atajó, stats_penal_torneo, es_argentina
-        """
-        return self._generar("""
-Acaba de suceder un PENAL. Tu tweet debe incluir:
-1. Si fue gol o errado/atajado y quién lo ejecutó
-2. El marcador actual
-3. Un dato: ¿cuántos penales convirtió/erró ese jugador en el torneo?
-   ¿Es un momento clave del partido? ¿Cómo cambia el resultado?
-4. Si el arquero atajó, mencionalo con algún dato suyo.
-Tono: vivencial, como si lo estuvieras narrando.
-""", datos)
-
-    def tweet_tarjeta_roja(self, datos: dict) -> str:
-        """
-        datos: marcador, minuto, jugador_expulsado, equipo, razon,
-               es_directa_o_segunda_amarilla, stats_partido_actuales
-        """
-        return self._generar("""
-Acaba de haber una TARJETA ROJA. Tu tweet debe incluir:
-1. Quién fue expulsado, de qué equipo y en qué minuto
-2. Si fue directa o segunda amarilla
-3. Cómo cambia tácticamente el partido (equipo en inferioridad)
-4. El marcador actual
-5. Si es un jugador clave, mencioná el impacto en el equipo
-Tono: analítico pero con impacto emocional.
-""", datos)
-
-    def tweet_var(self, datos: dict) -> str:
-        """
-        datos: partido, minuto, que_se_reviso, decision_final, marcador_antes,
-               marcador_despues, descripcion_jugada
-        """
-        return self._generar("""
-Hubo una revisión del VAR. Tu tweet debe incluir:
-1. Qué se revisó (gol, penal, roja, etc.)
-2. La decisión final del árbitro tras el VAR
-3. Si anuló un gol o cambió el marcador, remarcalo con el marcador nuevo
-4. Si es polémico, podés usar un tono levemente crítico sin exagerar
-5. El impacto en el partido
-Tono: claro, informativo, con algo de picardía si la decisión es discutible.
-""", datos)
-
-    def tweet_lesion(self, datos: dict) -> str:
-        """
-        datos: partido, minuto, jugador_lesionado, equipo, descripcion,
-               reemplazante, stats_jugador_torneo, es_figura
-        """
-        return self._generar("""
-Hay una LESIÓN importante en el partido. Tu tweet debe incluir:
-1. Quién se lesionó y en qué minuto
-2. Qué tan clave es ese jugador para su selección
-3. Stats del jugador en el torneo hasta ahora
-4. Por quién fue reemplazado
-5. El impacto potencial para el resto del partido/torneo
-Solo cubrís lesiones de figuras o jugadores relevantes. Tono: con preocupación genuina.
-""", datos)
-
-    def tweet_entretiempo(self, datos: dict) -> str:
-        """
-        datos: marcador, estadisticas_completas, eventos_pt, goleadores,
-               analisis_tactico, implica_argentina
-        """
-        return self._generar("""
-Terminó el PRIMER TIEMPO. Tu tweet es un resumen ejecutivo que incluye:
-1. El marcador y lo más destacado que pasó
-2. Las 2-3 estadísticas más llamativas del PT (posesión, tiros al arco, etc.)
-3. Si hubo goles, quién los hizo
-4. Una frase de análisis táctico breve
-5. Si el resultado afecta a Argentina (aunque no juegue), mencionalo
-Tono: resumen periodístico, conciso y con datos precisos.
-""", datos)
-
-    def tweet_final_partido(self, datos: dict) -> str:
-        """
-        datos: marcador_final, estadisticas_completas, goleadores,
-               tabla_grupo_actualizada, hito_historico, implica_argentina,
-               top_goleadores_torneo
-        """
-        return self._generar("""
-Terminó el PARTIDO. Tu tweet debe incluir:
-1. El resultado final claro
-2. Un dato estadístico que resuma el partido (ej: dominó posesión, más tiros, etc.)
-3. Si hubo un hito histórico (primer gol de un país en el torneo, récord, etc.)
-4. Cómo queda la tabla del grupo después de este resultado
-5. Si afecta la clasificación de Argentina, es prioritario mencionarlo
-Tono: contundente, con datos que justifiquen el resultado.
-""", datos)
-
-    # ── TWEETS FUERA DEL PARTIDO ──────────────────────────────────────────────
-
-    def tweet_fixture_dia(self, datos: dict) -> str:
-        """
-        datos: partidos_hoy (lista con horarios AR, grupos, rivales),
-               partidos_de_argentina
-        """
-        return self._generar("""
-Es el resumen del FIXTURE DEL DÍA en el Mundial. Tu tweet debe incluir:
-1. Cuántos partidos hay hoy y de qué grupos
-2. Si Argentina juega, es la prioridad absoluta con horario AR (GMT-3)
-3. Los partidos más atractivos del día
-4. Qué está en juego (clasificación, primeros puestos, etc.)
-Tono: anticipatorio, generando expectativa para el día mundialista.
-""", datos)
-
-    def tweet_tabla_grupo(self, datos: dict) -> str:
-        """
-        datos: nombre_grupo, tabla_formateada, que_necesita_argentina,
-               partidos_restantes
-        """
-        return self._generar("""
-Actualizá la TABLA DE POSICIONES del grupo de Argentina. Tu tweet debe incluir:
-1. Las posiciones actuales del grupo (podés usar formato de lista corta)
-2. Cómo está Argentina y qué necesita para clasificar
-3. Quiénes son los rivales directos
-4. Partidos restantes del grupo
-Tono: informativo y claro, como un panel deportivo que actualiza la tabla.
-""", datos)
-
-    def tweet_dato_curioso(self, datos: dict) -> str:
-        """
-        datos: torneo_stats (goles totales, promedio, etc.), top_goleadores,
-               records_del_dia, argentina_stats
-        """
-        return self._generar("""
-Generá un DATO CURIOSO O ESTADÍSTICO del Mundial que sea genuinamente interesante.
-Puede ser:
-- Un récord que se acaba de romper
-- Una comparación histórica ("la última vez que esto pasó fue en...")
-- Un dato de Argentina en el torneo
-- Una estadística llamativa del día
-- Un hecho inédito del torneo
-Tono: fascinación periodística. Que el lector quiera compartirlo.
-
-IMPORTANTE: Si los datos que recibís vienen vacíos o incompletos, NO lo menciones.
-NUNCA escribas cosas como "los datos llegaron vacíos" o "te genero un dato plausible".
-Simplemente generá un dato real y verificable sobre el Mundial 2026 usando tu conocimiento
-(formato de 48 equipos, sedes, historia de los Mundiales, datos de Argentina, etc.).
-El tweet debe leerse como un dato confiable publicado directamente, sin meta-comentarios.
-""", datos)
-
-    def tweet_recordatorio_partido(self, datos: dict) -> str:
-        """
-        datos: local, visitante, hora_argentina, grupo, lo_que_esta_en_juego,
-               historial_reciente
-        """
-        return self._generar("""
-Recordatorio de un PARTIDO QUE ESTÁ POR COMENZAR. Tu tweet debe incluir:
-1. Los equipos que juegan y el horario en Argentina (GMT-3)
-2. El grupo al que pertenece y qué está en juego
-3. Un dato de expectativa: el jugador a seguir, el historial entre ambos, etc.
-4. Si afecta a Argentina aunque no juegue, es prioritario
-Tono: anticipatorio, generando ganas de ver el partido.
-""", datos)
+    # ── ANÁLISIS DE CLASIFICACIÓN ─────────────────────────────────────────────
 
     def tweet_analisis_clasificacion(self, datos: dict) -> str:
-        """
-        datos: fecha_del_grupo, tabla, analisis_equipos (con estados y escenarios),
-               equipo_foco (opcional, ej: el que está al límite)
-        """
         return self._generar("""
-Generá un tweet de ANÁLISIS DE CLASIFICACIÓN del grupo de Argentina en el Mundial.
-Recibís datos ya calculados (tabla, puntos, escenarios). Tu trabajo es narrarlos
-con criterio periodístico y contexto histórico. El tweet debe incluir:
-1. La situación de clasificación según la fecha del grupo:
-   - Fecha 1: panorama inicial + dato histórico (ej: "equipos que perdieron su debut
-     y aun así avanzaron en Mundiales anteriores")
-   - Fecha 2: qué necesita cada equipo en la última fecha para clasificar
-   - Fecha 3: situación final y quiénes pasan
+Generá un tweet de ANÁLISIS DE CLASIFICACIÓN del grupo de Argentina.
+Recibís datos ya calculados (tabla, puntos, escenarios). Narralos con criterio:
+1. Según la fecha del grupo:
+   - Fecha 1: panorama + un dato histórico (equipos que arrancaron así y avanzaron)
+   - Fecha 2: qué necesita cada equipo para clasificar en la última fecha
+   - Fecha 3: situación final, quiénes pasan
 2. Datos concretos: puntos, qué resultado necesita un equipo, chances reales
-3. Foco en Argentina si está en el grupo, pero podés analizar a cualquier equipo
-   en una situación dramática (al borde de eliminación o de clasificar)
-4. Una comparación histórica que enriquezca: cómo le fue a equipos en situaciones
-   similares en Mundiales pasados
-Usá los números que te paso, no inventes resultados. El análisis tiene que ser
-preciso y a la vez atractivo. Tono: analista de fútbol que sabe de números e historia.
+3. Foco en Argentina, pero podés señalar la situación dramática de cualquier equipo
+4. Una comparación histórica que enriquezca el análisis
+Usá los números que te paso, no inventes resultados. Preciso y atractivo a la vez.
+Tono: analista que sabe de números y de historia mundialista.
 """, datos)
-        """
-        datos: local, visitante, formacion_local, formacion_visitante,
-               xi_local, xi_visitante, dt_local, dt_visitante, es_argentina
-        """
+
+    # ── FIXTURE DEL DÍA ───────────────────────────────────────────────────────
+
+    def tweet_fixture_dia(self, datos: dict) -> str:
         return self._generar("""
-Se confirmaron las FORMACIONES de un partido que está por empezar. Tu tweet debe incluir:
-1. Los dos equipos y el horario si está disponible
-2. El esquema táctico de cada uno (ej: 4-3-3 vs 4-4-2)
-3. Si hay alguna sorpresa en el XI o ausencia importante, destacala
-4. Mencioná 1-2 jugadores clave de cada lado
-5. Si es Argentina, prioridad absoluta: el XI completo o los nombres más importantes
-Por el límite de 280 caracteres, priorizá lo más relevante. Si es Argentina,
-podés listar el XI de forma compacta. Para otros partidos, foco en el esquema y figuras.
-Tono: el de alguien que acaba de ver salir las formaciones y las analiza.
+Es el resumen del FIXTURE DEL DÍA en el Mundial. Tu tweet debe incluir:
+1. Cuántos partidos hay hoy
+2. Si Argentina juega, es prioridad absoluta con horario AR
+3. Los partidos más atractivos del día
+4. Qué está en juego
+Tono: anticipatorio, generando expectativa para la jornada.
+""", datos)
+
+    # ── PREVIA DE ARGENTINA ───────────────────────────────────────────────────
+
+    def tweet_previa_argentina(self, datos: dict) -> str:
+        return self._generar("""
+Generá la PREVIA del próximo partido de Argentina en el Mundial. Incluí:
+1. Rival, día y horario en Argentina (GMT-3)
+2. Qué está en juego según la tabla del grupo
+3. Un dato del rival o del historial entre ambos
+4. El estadio si está disponible
+Tono: previa periodística que genera expectativa, sin exagerar.
+""", datos)
+
+    # ── DATO CURIOSO ──────────────────────────────────────────────────────────
+
+    def tweet_dato_curioso(self, datos: dict) -> str:
+        return self._generar("""
+Generá un DATO CURIOSO O ESTADÍSTICO del Mundial 2026 que sea genuinamente interesante.
+Puede ser sobre el formato de 48 equipos, un récord, una comparación histórica,
+el promedio de goles del torneo hasta ahora, o un dato de Argentina.
+Recibís algunos números del torneo (partidos jugados, goles). Usalos si suman.
+
+IMPORTANTE: Si los datos vienen vacíos o incompletos, NO lo menciones.
+NUNCA escribas "los datos llegaron vacíos" ni nada similar. Generá un dato real
+y verificable con tu conocimiento del Mundial y su historia.
+Tono: fascinación periodística, que invite a compartir.
 """, datos)

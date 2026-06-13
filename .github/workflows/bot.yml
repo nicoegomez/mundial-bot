@@ -2,33 +2,29 @@ name: Bot Mundial 2026
 
 on:
   schedule:
-    # ─── EN VIVO: cada 10 min SOLO en franja de partidos ──────────────────────
-    # Partidos del Mundial: ~16hs a 3am AR = 19:00 a 06:00 UTC
-    # Cada 10 min en vez de 5 → la mitad de runs, sigue detectando todo gol
-    - cron: "*/10 19-23 * * *"   # 16:00-20:00 AR
-    - cron: "*/10 0-6   * * *"   # 21:00-03:00 AR
-    # ─── PROGRAMADOS (1 run c/u por día) ──────────────────────────────────────
-    - cron: "0 12 * * *"   # 09:00 AR — fixture del día
+    # Resumen de partidos: cada 30 min en franja de partidos (datos post-FT)
+    # La fuente actualiza "dentro de horas" del final, así que no hace falta más
+    - cron: "*/30 19-23 * * *"   # 16:00-20:00 AR
+    - cron: "*/30 0-6   * * *"   # 21:00-03:00 AR
+    # Programados (1 vez al día)
     - cron: "0 11 * * *"   # 08:00 AR — dato curioso
-    - cron: "0 1  * * *"   # 22:00 AR — tabla del grupo
-    - cron: "0 13 * * *"   # 10:00 AR — recordatorio
-    - cron: "0 14 * * *"   # 11:00 AR — análisis de clasificación
+    - cron: "0 12 * * *"   # 09:00 AR — fixture del día
+    - cron: "0 13 * * *"   # 10:00 AR — previa de Argentina
+    - cron: "0 14 * * *"   # 11:00 AR — análisis de grupo
 
   workflow_dispatch:
     inputs:
       modo:
         description: "Modo del bot"
         required: true
-        default: "en_vivo"
+        default: "resumen_partido"
         type: choice
         options:
-          - en_vivo
+          - resumen_partido
+          - analisis_grupo
           - fixture_dia
-          - tabla_grupo
+          - previa_argentina
           - dato_curioso
-          - recordatorio
-          - formaciones
-          - analisis
       preview:
         description: "Solo preview (no publica)"
         required: false
@@ -55,44 +51,20 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements.txt') }}
-
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
-      - name: En vivo
-        if: |
-          github.event_name == 'schedule' &&
-          (startsWith(github.event.schedule, '*/10'))
+      - name: Resumen de partidos
+        if: github.event_name == 'schedule' && startsWith(github.event.schedule, '*/30')
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_API_KEY:         ${{ secrets.X_API_KEY }}
           X_API_SECRET:      ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
-          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
-        run: |
-          python bot.py formaciones
-          python bot.py en_vivo
-
-      - name: Fixture del dia
-        if: github.event_name == 'schedule' && github.event.schedule == '0 12 * * *'
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          X_API_KEY:         ${{ secrets.X_API_KEY }}
-          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
-          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
-          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
-          PYTHONIOENCODING:  utf-8
-          GITHUB_ACTIONS:    "true"
-        run: python bot.py fixture_dia
+        run: python bot.py resumen_partido
 
       - name: Dato curioso
         if: github.event_name == 'schedule' && github.event.schedule == '0 11 * * *'
@@ -102,25 +74,23 @@ jobs:
           X_API_SECRET:      ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
-          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
         run: python bot.py dato_curioso
 
-      - name: Tabla del grupo
-        if: github.event_name == 'schedule' && github.event.schedule == '0 1 * * *'
+      - name: Fixture del dia
+        if: github.event_name == 'schedule' && github.event.schedule == '0 12 * * *'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_API_KEY:         ${{ secrets.X_API_KEY }}
           X_API_SECRET:      ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
-          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
-        run: python bot.py tabla_grupo
+        run: python bot.py fixture_dia
 
-      - name: Recordatorio
+      - name: Previa Argentina
         if: github.event_name == 'schedule' && github.event.schedule == '0 13 * * *'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -128,12 +98,11 @@ jobs:
           X_API_SECRET:      ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
-          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
-        run: python bot.py recordatorio
+        run: python bot.py previa_argentina
 
-      - name: Analisis
+      - name: Analisis de grupo
         if: github.event_name == 'schedule' && github.event.schedule == '0 14 * * *'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -141,10 +110,9 @@ jobs:
           X_API_SECRET:      ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
-          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
-        run: python bot.py analisis
+        run: python bot.py analisis_grupo
 
       - name: Manual
         if: github.event_name == 'workflow_dispatch'
@@ -154,7 +122,6 @@ jobs:
           X_API_SECRET:      ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
-          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
         run: |

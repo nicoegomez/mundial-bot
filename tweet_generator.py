@@ -22,6 +22,14 @@ Tu estilo:
 - El marcador siempre visible cuando hay goles
 - Contexto histórico cuando sea posible (récords, comparaciones, "por primera vez")
 - Si es un partido que afecta a Argentina, lo aclarás aunque no juegue
+
+REGLAS DE FORMATO ESTRICTAS (MUY IMPORTANTE):
+- Respondé ÚNICAMENTE con el texto del tweet, nada más.
+- NO uses prefijos como "TWEET:", "Tweet:", ni encabezados de ningún tipo.
+- NO uses markdown: nada de asteriscos (**negrita** o *itálica*), nada de guiones separadores (---).
+- NO agregues comentarios sobre la cantidad de caracteres.
+- NO uses comillas envolviendo el tweet.
+- Escribí el tweet como aparecería publicado directamente en X, en texto plano.
 """
 
 
@@ -41,12 +49,38 @@ class TweetGenerator:
                 system=system,
                 messages=[{"role": "user", "content": user}],
             )
-            tweet = resp.content[0].text.strip().strip('"').strip("'")
+            tweet = resp.content[0].text.strip()
+            tweet = self._limpiar(tweet)
             log.info(f"Tweet generado ({len(tweet)} chars): {tweet[:60]}...")
             return tweet
         except Exception as e:
             log.error(f"Error generando tweet: {e}")
             return ""
+
+    @staticmethod
+    def _limpiar(texto: str) -> str:
+        """Quita prefijos, markdown y artefactos que X muestra como texto literal."""
+        import re
+        t = texto.strip()
+
+        # Quitar prefijos tipo "TWEET:", "**TWEET:**", "Tweet:", etc. al inicio
+        t = re.sub(r'^\**\s*tweet\s*:?\s*\**\s*', '', t, flags=re.IGNORECASE)
+
+        # Quitar comillas envolventes
+        t = t.strip().strip('"').strip("'").strip()
+
+        # Quitar negritas/itálicas de markdown: **texto** o *texto* → texto
+        t = re.sub(r'\*\*([^*]+)\*\*', r'\1', t)
+        t = re.sub(r'\*([^*]+)\*', r'\1', t)
+
+        # Quitar separadores tipo "---" en líneas sueltas
+        t = re.sub(r'\n-{2,}\n', '\n', t)
+        t = re.sub(r'^\s*-{2,}\s*$', '', t, flags=re.MULTILINE)
+
+        # Quitar comentarios de longitud que a veces agrega: "(278 caracteres...)"
+        t = re.sub(r'\n*\*?\(?\d+\s*caracteres?[^)]*\)?\*?\s*$', '', t, flags=re.IGNORECASE)
+
+        return t.strip()
 
     # ── EVENTOS EN VIVO ───────────────────────────────────────────────────────
 

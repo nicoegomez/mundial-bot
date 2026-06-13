@@ -20,6 +20,7 @@ from datetime import datetime, timezone, timedelta
 
 from football_api import FootballAPI, ARGENTINA_ID
 from tweet_generator import TweetGenerator
+import analisis as anl
 from state_manager import (
     cargar_estado, guardar_estado,
     evento_ya_procesado, marcar_evento_procesado,
@@ -472,6 +473,50 @@ def modo_formaciones(preview: bool):
     commit_estado_en_github()
 
 
+def modo_analisis(preview: bool):
+    """
+    Análisis diario de clasificación del grupo de Argentina.
+    Construye la tabla desde resultados, calcula escenarios y narra con Claude.
+    """
+    estado = cargar_estado()
+    from datetime import datetime as _dt, timezone as _tz
+    hoy = _dt.now(_tz.utc).strftime("%Y-%m-%d")
+    aid = f"analisis_{hoy}"
+
+    if evento_ya_procesado(estado, aid):
+        log.info("Análisis ya tuiteado hoy.")
+        guardar_estado(estado)
+        return
+
+    # 1. Identificar grupo de Argentina y sus rivales
+    nombre_grupo, team_ids = api.identificar_grupo_argentina()
+    if not team_ids:
+        log.warning("No se pudo identificar el grupo de Argentina aún.")
+        guardar_estado(estado)
+        return
+
+    # 2. Construir la tabla desde los resultados
+    tabla = api.construir_tabla_grupo(team_ids)
+    if not tabla or all(t["pj"] == 0 for t in tabla):
+        log.info("Todavía no hay partidos jugados en el grupo.")
+        guardar_estado(estado)
+        return
+
+    # 3. Calcular escenarios
+    fecha = anl.detectar_fecha(tabla)
+    resumen = anl.analizar_grupo(tabla, fecha)
+    datos = anl.formatear_para_claude(resumen)
+
+    # 4. Narrar con Claude
+    tweet = gen.tweet_analisis_clasificacion(datos)
+    if tweet:
+        publicar(tweet, preview, estado)
+        marcar_evento_procesado(estado, aid)
+
+    guardar_estado(estado)
+    commit_estado_en_github()
+
+
 MODOS = {
     "en_vivo":      modo_en_vivo,
     "fixture_dia":  modo_fixture_dia,
@@ -479,6 +524,7 @@ MODOS = {
     "dato_curioso": modo_dato_curioso,
     "recordatorio": modo_recordatorio,
     "formaciones":  modo_formaciones,
+    "analisis":     modo_analisis,
 }
 
 if __name__ == "__main__":

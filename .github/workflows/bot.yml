@@ -12,6 +12,7 @@ on:
     - cron: "0 11 * * *"   # 08:00 AR — dato curioso
     - cron: "0 1  * * *"   # 22:00 AR — tabla del grupo
     - cron: "0 13 * * *"   # 10:00 AR — recordatorio
+    - cron: "0 14 * * *"   # 11:00 AR — análisis de clasificación
 
   workflow_dispatch:
     inputs:
@@ -27,6 +28,7 @@ on:
           - dato_curioso
           - recordatorio
           - formaciones
+          - analisis
       preview:
         description: "Solo preview (no publica)"
         required: false
@@ -130,6 +132,19 @@ jobs:
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
         run: python bot.py recordatorio
+
+      - name: Analisis
+        if: github.event_name == 'schedule' && github.event.schedule == '0 14 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py analisis
 
       - name: Manual
         if: github.event_name == 'workflow_dispatch'

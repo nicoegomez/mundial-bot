@@ -256,7 +256,28 @@ Recordatorio de un PARTIDO QUE ESTÁ POR COMENZAR. Tu tweet debe incluir:
 Tono: anticipatorio, generando ganas de ver el partido.
 """, datos)
 
-    def tweet_formaciones(self, datos: dict) -> str:
+    def tweet_analisis_clasificacion(self, datos: dict) -> str:
+        """
+        datos: fecha_del_grupo, tabla, analisis_equipos (con estados y escenarios),
+               equipo_foco (opcional, ej: el que está al límite)
+        """
+        return self._generar("""
+Generá un tweet de ANÁLISIS DE CLASIFICACIÓN del grupo de Argentina en el Mundial.
+Recibís datos ya calculados (tabla, puntos, escenarios). Tu trabajo es narrarlos
+con criterio periodístico y contexto histórico. El tweet debe incluir:
+1. La situación de clasificación según la fecha del grupo:
+   - Fecha 1: panorama inicial + dato histórico (ej: "equipos que perdieron su debut
+     y aun así avanzaron en Mundiales anteriores")
+   - Fecha 2: qué necesita cada equipo en la última fecha para clasificar
+   - Fecha 3: situación final y quiénes pasan
+2. Datos concretos: puntos, qué resultado necesita un equipo, chances reales
+3. Foco en Argentina si está en el grupo, pero podés analizar a cualquier equipo
+   en una situación dramática (al borde de eliminación o de clasificar)
+4. Una comparación histórica que enriquezca: cómo le fue a equipos en situaciones
+   similares en Mundiales pasados
+Usá los números que te paso, no inventes resultados. El análisis tiene que ser
+preciso y a la vez atractivo. Tono: analista de fútbol que sabe de números e historia.
+""", datos)
         """
         datos: local, visitante, formacion_local, formacion_visitante,
                xi_local, xi_visitante, dt_local, dt_visitante, es_argentina

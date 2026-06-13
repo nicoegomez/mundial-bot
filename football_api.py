@@ -66,18 +66,146 @@ class FootballAPI:
         return [f for f in todos if self._es_mundial(f)]
 
     def get_proximo_argentina(self) -> dict | None:
-        """Próximo partido de Argentina en el Mundial."""
-        data  = self._get("fixtures", {"team": ARGENTINA_ID, "next": 5})
-        todos = data.get("response", [])
-        mundiales = [f for f in todos if self._es_mundial(f)]
-        return mundiales[0] if mundiales else None
+        """
+        Próximo partido de Argentina en el Mundial.
+        Usa el listado completo (sin 'next', bloqueado en Free) y filtra
+        el primer partido aún no jugado, ordenado por fecha.
+        """
+        from datetime import datetime as _dt, timezone as _tz
+        fixtures = self.get_todos_fixtures_argentina()
+        ahora = _dt.now(_tz.utc)
+        futuros = []
+        for f in fixtures:
+            estado = f["fixture"]["status"]["short"]
+            dt = _dt.fromisoformat(f["fixture"]["date"].replace("Z", "+00:00"))
+            if estado == "NS" or dt > ahora:
+                futuros.append((dt, f))
+        futuros.sort(key=lambda x: x[0])
+        return futuros[0][1] if futuros else None
 
     def get_ultimo_argentina(self) -> dict | None:
-        """Último partido jugado por Argentina en el Mundial."""
-        data  = self._get("fixtures", {"team": ARGENTINA_ID, "last": 5})
+        """
+        Último partido jugado por Argentina en el Mundial.
+        Usa el listado completo (sin 'last', bloqueado en Free) y filtra
+        el último partido finalizado, ordenado por fecha.
+        """
+        from datetime import datetime as _dt
+        fixtures = self.get_todos_fixtures_argentina()
+        jugados = []
+        for f in fixtures:
+            estado = f["fixture"]["status"]["short"]
+            if estado in ("FT", "AET", "PEN"):
+                dt = _dt.fromisoformat(f["fixture"]["date"].replace("Z", "+00:00"))
+                jugados.append((dt, f))
+        jugados.sort(key=lambda x: x[0])
+        return jugados[-1][1] if jugados else None
+
+    def get_todos_fixtures_argentina(self) -> list:
+        """Todos los partidos de Argentina en el Mundial (jugados y por jugar)."""
+        data  = self._get("fixtures", {"team": ARGENTINA_ID})
         todos = data.get("response", [])
-        mundiales = [f for f in todos if self._es_mundial(f)]
-        return mundiales[-1] if mundiales else None
+        return [f for f in todos if self._es_mundial(f)]
+
+    def get_fixtures_por_equipo(self, team_id: int) -> list:
+        """Todos los partidos de un equipo en el Mundial."""
+        data  = self._get("fixtures", {"team": team_id})
+        todos = data.get("response", [])
+        return [f for f in todos if self._es_mundial(f)]
+
+    def identificar_grupo_argentina(self) -> tuple:
+        """
+        Identifica el grupo de Argentina y sus rivales desde los fixtures.
+        Devuelve (nombre_ronda_grupo, set de team_ids del grupo).
+        No usa standings (bloqueado en Free) — lo deduce de los partidos.
+        """
+        fixtures = self.get_todos_fixtures_argentina()
+        if not fixtures:
+            return "Grupo ?", set()
+
+        # El campo 'round' identifica la fase; para fase de grupos los rivales
+        # de Argentina en esos partidos son los del grupo.
+        equipos = set()
+        for f in fixtures:
+            rnd = f["league"].get("round", "")
+            if "Group" in rnd or "Grupo" in rnd:
+                equipos.add(f["teams"]["home"]["id"])
+                equipos.add(f["teams"]["away"]["id"])
+
+        # Nombre del grupo a partir del primer fixture de grupo
+        nombre = "Grupo de Argentina"
+        return nombre, equipos
+
+    def construir_tabla_grupo(self, team_ids: set) -> list:
+        """
+        Construye la tabla del grupo sumando los resultados de los partidos
+        FINALIZADOS de cada equipo. No depende del endpoint standings.
+
+        Devuelve lista de dicts ordenada por: puntos, dif gol, goles a favor.
+        Cada dict: {team_id, nombre, pj, pg, pe, pp, gf, gc, dg, pts, amarillas, rojas}
+        """
+        # Recolectar todos los fixtures únicos del grupo
+        fixtures_vistos = {}
+        for tid in team_ids:
+            for f in self.get_fixtures_por_equipo(tid):
+                fid = f["fixture"]["id"]
+                rnd = f["league"].get("round", "")
+                if ("Group" in rnd or "Grupo" in rnd):
+                    fixtures_vistos[fid] = f
+
+        # Inicializar tabla
+        tabla = {tid: {
+            "team_id": tid, "nombre": "", "pj": 0, "pg": 0, "pe": 0, "pp": 0,
+            "gf": 0, "gc": 0, "dg": 0, "pts": 0, "amarillas": 0, "rojas": 0,
+        } for tid in team_ids}
+
+        for f in fixtures_vistos.values():
+            estado = f["fixture"]["status"]["short"]
+            if estado not in ("FT", "AET", "PEN"):
+                continue  # Solo partidos terminados
+
+            h_id = f["teams"]["home"]["id"]
+            a_id = f["teams"]["away"]["id"]
+            h_name = f["teams"]["home"]["name"]
+            a_name = f["teams"]["away"]["name"]
+            gh = f["goals"]["home"] or 0
+            ga = f["goals"]["away"] or 0
+
+            for tid, name in ((h_id, h_name), (a_id, a_name)):
+                if tid in tabla:
+                    tabla[tid]["nombre"] = name
+
+            if h_id in tabla:
+                tabla[h_id]["pj"] += 1
+                tabla[h_id]["gf"] += gh
+                tabla[h_id]["gc"] += ga
+            if a_id in tabla:
+                tabla[a_id]["pj"] += 1
+                tabla[a_id]["gf"] += ga
+                tabla[a_id]["gc"] += gh
+
+            if gh > ga:
+                if h_id in tabla: tabla[h_id]["pg"] += 1; tabla[h_id]["pts"] += 3
+                if a_id in tabla: tabla[a_id]["pp"] += 1
+            elif ga > gh:
+                if a_id in tabla: tabla[a_id]["pg"] += 1; tabla[a_id]["pts"] += 3
+                if h_id in tabla: tabla[h_id]["pp"] += 1
+            else:
+                if h_id in tabla: tabla[h_id]["pe"] += 1; tabla[h_id]["pts"] += 1
+                if a_id in tabla: tabla[a_id]["pe"] += 1; tabla[a_id]["pts"] += 1
+
+        # Calcular diferencia de gol
+        for t in tabla.values():
+            t["dg"] = t["gf"] - t["gc"]
+
+        # Ordenar: puntos, dif gol, goles a favor
+        orden = sorted(
+            tabla.values(),
+            key=lambda t: (t["pts"], t["dg"], t["gf"]),
+            reverse=True
+        )
+        for i, t in enumerate(orden, 1):
+            t["posicion"] = i
+        return orden
 
     # ── EVENTOS Y ESTADÍSTICAS ────────────────────────────────────────────────
 

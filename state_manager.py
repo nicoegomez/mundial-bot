@@ -24,6 +24,15 @@ log = logging.getLogger(__name__)
 
 STATE_FILE = Path("state.json")
 
+# Cuando está en True, no se persiste nada (modo preview).
+PREVIEW_MODE = False
+
+
+def set_preview_mode(activo: bool):
+    """Activa el modo preview: no se guarda ni commitea el estado."""
+    global PREVIEW_MODE
+    PREVIEW_MODE = activo
+
 
 def cargar_estado() -> dict:
     """Carga el estado desde el archivo JSON."""
@@ -45,6 +54,9 @@ def cargar_estado() -> dict:
 
 def guardar_estado(estado: dict):
     """Guarda el estado en el archivo JSON."""
+    if PREVIEW_MODE:
+        log.info("Modo preview: no se guarda el estado.")
+        return
     estado["ultimo_run"] = datetime.now(timezone.utc).isoformat()
     try:
         with open(STATE_FILE, "w", encoding="utf-8") as f:
@@ -109,6 +121,9 @@ def commit_estado_en_github():
     para que persista entre runs.
     Solo funciona dentro de GitHub Actions.
     """
+    if PREVIEW_MODE:
+        log.info("Modo preview: no se commitea el estado.")
+        return
     if not os.environ.get("GITHUB_ACTIONS"):
         log.info("No estamos en GitHub Actions, skip commit de estado.")
         return

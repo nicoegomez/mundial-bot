@@ -475,6 +475,10 @@ if __name__ == "__main__":
     parser.add_argument("modo", choices=list(MODOS.keys()))
     parser.add_argument("--preview", action="store_true")
     args = parser.parse_args()
+
+    from state_manager import set_preview_mode
+    set_preview_mode(args.preview)
+
     log.info(f"Modo={args.modo} preview={args.preview}")
     MODOS[args.modo](preview=args.preview)
     log.info("Fin.")

@@ -1,8 +1,9 @@
 {
   "eventos_procesados": [
-    "dato_curioso_2026-06-13"
+    "dato_curioso_2026-06-13",
+    "fixture_dia_2026-06-13"
   ],
-  "ultimo_run": "2026-06-13T03:34:02.129359+00:00",
+  "ultimo_run": "2026-06-13T04:16:42.197725+00:00",
   "partidos_monitoreados": [],
-  "tweets_hoy": 1
+  "tweets_hoy": 2
 }

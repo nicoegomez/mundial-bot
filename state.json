@@ -1,7 +1,5 @@
 {
-  "eventos_procesados": [
-    "fixture_dia_2026-06-13"
-  ],
-  "ultimo_run": "2026-06-13T03:26:39.913867+00:00",
-  "tweets_hoy": 1
+  "eventos_procesados": [],
+  "ultimo_run": null,
+  "tweets_hoy": 0
 }

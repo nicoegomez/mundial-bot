@@ -60,10 +60,21 @@ x_client = tweepy.Client(
 )
 
 
+def recortar_tweet(texto: str, limite: int = 280) -> str:
+    """Recorta el tweet a 280 caracteres sin cortar palabras a la mitad."""
+    if len(texto) <= limite:
+        return texto
+    # Recortar al último espacio antes del límite, dejando lugar para "…"
+    corte = texto[:limite - 1].rsplit(" ", 1)[0]
+    log.warning(f"Tweet recortado de {len(texto)} a {len(corte)+1} caracteres.")
+    return corte + "…"
+
+
 def publicar(texto: str, preview: bool, estado: dict):
     if not texto:
         log.warning("Tweet vacío, no se publica.")
         return
+    texto = recortar_tweet(texto)
     if preview:
         print(f"\n{'='*60}")
         print(f"  PREVIEW ({len(texto)} chars)")

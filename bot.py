@@ -400,12 +400,74 @@ def modo_recordatorio(preview: bool):
     commit_estado_en_github()
 
 
+def modo_formaciones(preview: bool):
+    """
+    Publica las formaciones de los partidos del Mundial que están por empezar.
+    Detecta cuando los XI titulares ya están confirmados (1hs antes del partido).
+    """
+    estado   = cargar_estado()
+    partidos = api.get_partidos_hoy()
+
+    if not partidos:
+        log.info("Sin partidos del Mundial hoy.")
+        guardar_estado(estado)
+        return
+
+    from datetime import datetime as _dt, timezone as _tz
+    ahora = _dt.now(_tz.utc)
+
+    for fixture in partidos:
+        fixture_id = fixture["fixture"]["id"]
+        status     = fixture["fixture"]["status"]["short"]
+        local      = fixture["teams"]["home"]["name"]
+        visitante  = fixture["teams"]["away"]["name"]
+        es_arg     = (
+            fixture["teams"]["home"]["id"] == ARGENTINA_ID or
+            fixture["teams"]["away"]["id"] == ARGENTINA_ID
+        )
+
+        # Solo partidos que aún no empezaron (NS = Not Started)
+        if status != "NS":
+            continue
+
+        form_id = f"formaciones_{fixture_id}"
+        if evento_ya_procesado(estado, form_id):
+            continue
+
+        lineups = api.get_lineups(fixture_id)
+        if not lineups or len(lineups) < 2:
+            log.info(f"Formaciones aún no disponibles para {local} vs {visitante}")
+            continue
+
+        equipos = list(lineups.items())
+        datos = {
+            "evento":             "FORMACIONES",
+            "local":              local,
+            "visitante":          visitante,
+            "formacion_local":    equipos[0][1].get("formation", ""),
+            "formacion_visitante": equipos[1][1].get("formation", ""),
+            "xi_local":           equipos[0][1].get("startXI", []),
+            "xi_visitante":       equipos[1][1].get("startXI", []),
+            "dt_local":           equipos[0][1].get("coach", ""),
+            "dt_visitante":       equipos[1][1].get("coach", ""),
+            "es_argentina":       es_arg,
+        }
+        tweet = gen.tweet_formaciones(datos)
+        if tweet:
+            publicar(tweet, preview, estado)
+            marcar_evento_procesado(estado, form_id)
+
+    guardar_estado(estado)
+    commit_estado_en_github()
+
+
 MODOS = {
     "en_vivo":      modo_en_vivo,
     "fixture_dia":  modo_fixture_dia,
     "tabla_grupo":  modo_tabla_grupo,
     "dato_curioso": modo_dato_curioso,
     "recordatorio": modo_recordatorio,
+    "formaciones":  modo_formaciones,
 }
 
 if __name__ == "__main__":

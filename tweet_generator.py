@@ -215,3 +215,20 @@ Recordatorio de un PARTIDO QUE ESTÁ POR COMENZAR. Tu tweet debe incluir:
 4. Si afecta a Argentina aunque no juegue, es prioritario
 Tono: anticipatorio, generando ganas de ver el partido.
 """, datos)
+
+    def tweet_formaciones(self, datos: dict) -> str:
+        """
+        datos: local, visitante, formacion_local, formacion_visitante,
+               xi_local, xi_visitante, dt_local, dt_visitante, es_argentina
+        """
+        return self._generar("""
+Se confirmaron las FORMACIONES de un partido que está por empezar. Tu tweet debe incluir:
+1. Los dos equipos y el horario si está disponible
+2. El esquema táctico de cada uno (ej: 4-3-3 vs 4-4-2)
+3. Si hay alguna sorpresa en el XI o ausencia importante, destacala
+4. Mencioná 1-2 jugadores clave de cada lado
+5. Si es Argentina, prioridad absoluta: el XI completo o los nombres más importantes
+Por el límite de 280 caracteres, priorizá lo más relevante. Si es Argentina,
+podés listar el XI de forma compacta. Para otros partidos, foco en el esquema y figuras.
+Tono: el de alguien que acaba de ver salir las formaciones y las analiza.
+""", datos)

@@ -2,12 +2,16 @@ name: Bot Mundial 2026
 
 on:
   schedule:
-    - cron: "*/5 15-23 * * *"
-    - cron: "*/5 0-6  * * *"
-    - cron: "0 12 * * *"
-    - cron: "0 11 * * *"
-    - cron: "0 1  * * *"
-    - cron: "0 13 * * *"
+    # ─── EN VIVO: cada 10 min SOLO en franja de partidos ──────────────────────
+    # Partidos del Mundial: ~16hs a 3am AR = 19:00 a 06:00 UTC
+    # Cada 10 min en vez de 5 → la mitad de runs, sigue detectando todo gol
+    - cron: "*/10 19-23 * * *"   # 16:00-20:00 AR
+    - cron: "*/10 0-6   * * *"   # 21:00-03:00 AR
+    # ─── PROGRAMADOS (1 run c/u por día) ──────────────────────────────────────
+    - cron: "0 12 * * *"   # 09:00 AR — fixture del día
+    - cron: "0 11 * * *"   # 08:00 AR — dato curioso
+    - cron: "0 1  * * *"   # 22:00 AR — tabla del grupo
+    - cron: "0 13 * * *"   # 10:00 AR — recordatorio
 
   workflow_dispatch:
     inputs:
@@ -22,6 +26,7 @@ on:
           - tabla_grupo
           - dato_curioso
           - recordatorio
+          - formaciones
       preview:
         description: "Solo preview (no publica)"
         required: false
@@ -60,7 +65,7 @@ jobs:
       - name: En vivo
         if: |
           github.event_name == 'schedule' &&
-          (startsWith(github.event.schedule, '*/5'))
+          (startsWith(github.event.schedule, '*/10'))
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_API_KEY:         ${{ secrets.X_API_KEY }}
@@ -70,7 +75,9 @@ jobs:
           FOOTBALL_API_KEY:  ${{ secrets.FOOTBALL_API_KEY }}
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
-        run: python bot.py en_vivo
+        run: |
+          python bot.py formaciones
+          python bot.py en_vivo
 
       - name: Fixture del dia
         if: github.event_name == 'schedule' && github.event.schedule == '0 12 * * *'

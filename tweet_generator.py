@@ -135,10 +135,16 @@ Tono: anticipatorio, generando expectativa para la jornada.
         return self._generar("""
 Generá la PREVIA del próximo partido de Argentina en el Mundial. Incluí:
 1. Rival, día y horario en Argentina (GMT-3)
-2. Qué está en juego según la tabla del grupo
-3. Un dato del rival o del historial entre ambos
-4. El estadio si está disponible
-Tono: previa periodística que genera expectativa, sin exagerar.
+2. El estadio si está disponible
+3. Un dato del rival, del historial entre ambos, o de cómo llega Argentina
+
+SOBRE LA TABLA Y LOS PUNTOS:
+- Si el dato "grupo_arranco" es true, podés mencionar la situación del grupo y qué se juega.
+- Si "grupo_arranco" es false (NADIE jugó todavía), NO menciones puntos, posiciones
+  ni la tabla. Sería una obviedad decir que están todos en cero. En ese caso, enfocate
+  en la expectativa del debut, el rival y el contexto del torneo.
+
+Tono: previa periodística que genera expectativa, sin exagerar ni decir obviedades.
 """, datos)
 
     # ── DATO CURIOSO ──────────────────────────────────────────────────────────

@@ -225,13 +225,18 @@ def modo_previa_argentina(preview: bool):
     grupo = prox.get("group", "")
     tabla = wc.construir_tabla_grupo(grupo) if grupo else []
 
+    # ¿El grupo ya jugó algún partido? Si no, no pasamos tabla (evita obviedades
+    # tipo "los dos están sin puntos").
+    grupo_arranco = bool(tabla) and any(t["pj"] > 0 for t in tabla)
+
     datos = {
-        "rival":         rival,
-        "fecha":         prox.get("date", ""),
+        "rival":          rival,
+        "fecha":          prox.get("date", ""),
         "hora_argentina": wc.hora_argentina(prox),
-        "estadio":       prox.get("ground", ""),
-        "grupo":         grupo,
-        "tabla_grupo":   wc.formatear_tabla(tabla) if tabla else "",
+        "estadio":        prox.get("ground", ""),
+        "grupo":          grupo,
+        "grupo_arranco":  grupo_arranco,
+        "tabla_grupo":    wc.formatear_tabla(tabla) if grupo_arranco else "",
     }
     tweet = gen.tweet_previa_argentina(datos)
     if tweet:

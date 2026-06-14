@@ -2,10 +2,10 @@ name: Bot Mundial 2026
 
 on:
   schedule:
-    # Resumen de partidos: cada 30 min en franja de partidos (datos post-FT)
-    # La fuente actualiza "dentro de horas" del final, así que no hace falta más
-    - cron: "*/30 19-23 * * *"   # 16:00-20:00 AR
-    - cron: "*/30 0-6   * * *"   # 21:00-03:00 AR
+    # Resumen de partidos: cada 15 min en franja amplia de partidos
+    # openfootball actualiza rápido, así que conviene chequear seguido
+    - cron: "*/15 15-23 * * *"   # 12:00-20:00 AR
+    - cron: "*/15 0-6   * * *"   # 21:00-03:00 AR
     # Programados (1 vez al día)
     - cron: "0 11 * * *"   # 08:00 AR — dato curioso
     - cron: "0 12 * * *"   # 09:00 AR — fixture del día
@@ -64,7 +64,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Resumen de partidos
-        if: github.event_name == 'schedule' && startsWith(github.event.schedule, '*/30')
+        if: github.event_name == 'schedule' && startsWith(github.event.schedule, '*/15')
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           X_API_KEY:         ${{ secrets.X_API_KEY }}

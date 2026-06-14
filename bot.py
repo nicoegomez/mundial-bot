@@ -275,12 +275,109 @@ def modo_dato_curioso(preview: bool):
     commit_estado_en_github()
 
 
+def _contexto_torneo() -> dict:
+    """Datos generales del torneo para los modos de contenido."""
+    jugados = wc.partidos_jugados()
+    total_goles = 0
+    goleadores = {}  # nombre -> goles
+    for m in jugados:
+        if "score" in m and "ft" in m["score"]:
+            total_goles += sum(m["score"]["ft"])
+        for lado in ("goals1", "goals2"):
+            for g in m.get(lado, []):
+                nombre = g.get("name", "")
+                if nombre:
+                    goleadores[nombre] = goleadores.get(nombre, 0) + 1
+    top = sorted(goleadores.items(), key=lambda x: x[1], reverse=True)[:10]
+    return {
+        "partidos_jugados": len(jugados),
+        "goles_totales":    total_goles,
+        "promedio_goles":   round(total_goles / len(jugados), 2) if jugados else 0,
+        "top_goleadores":   "\n".join(f"{n}: {g} gol(es)" for n, g in top),
+    }
+
+
+def modo_figura_fecha(preview: bool):
+    estado = cargar_estado()
+    hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    fid = f"figura_{hoy}"
+    if evento_ya_procesado(estado, fid):
+        log.info("Figura de la fecha ya tuiteada hoy.")
+        guardar_estado(estado)
+        return
+
+    jugados_hoy = wc.partidos_jugados_de_fecha(hoy)
+    if not jugados_hoy:
+        # Si no hubo partidos hoy, usar los últimos jugados
+        jugados_hoy = wc.partidos_jugados()[-4:]
+    if not jugados_hoy:
+        log.info("No hay partidos para elegir figura.")
+        guardar_estado(estado)
+        return
+
+    goles_jornada = []
+    for m in jugados_hoy:
+        g = wc.goles_texto(m)
+        if g:
+            goles_jornada.append(f"{wc.marcador(m)}:\n{g}")
+
+    datos = {
+        "partidos_jornada": [wc.marcador(m) for m in jugados_hoy],
+        "goles_jornada":    "\n\n".join(goles_jornada),
+    }
+    tweet = gen.tweet_figura_fecha(datos)
+    if tweet:
+        publicar(tweet, preview, estado)
+        marcar_evento_procesado(estado, fid)
+    guardar_estado(estado)
+    commit_estado_en_github()
+
+
+def modo_debate(preview: bool):
+    estado = cargar_estado()
+    hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    did = f"debate_{hoy}"
+    if evento_ya_procesado(estado, did):
+        log.info("Debate ya tuiteado hoy.")
+        guardar_estado(estado)
+        return
+
+    datos = _contexto_torneo()
+    tweet = gen.tweet_debate(datos)
+    if tweet:
+        publicar(tweet, preview, estado)
+        marcar_evento_procesado(estado, did)
+    guardar_estado(estado)
+    commit_estado_en_github()
+
+
+def modo_numero_dia(preview: bool):
+    estado = cargar_estado()
+    hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    nid = f"numero_{hoy}"
+    if evento_ya_procesado(estado, nid):
+        log.info("Número del día ya tuiteado hoy.")
+        guardar_estado(estado)
+        return
+
+    datos = _contexto_torneo()
+    tweet = gen.tweet_numero_dia(datos)
+    if tweet:
+        publicar(tweet, preview, estado)
+        marcar_evento_procesado(estado, nid)
+    guardar_estado(estado)
+    commit_estado_en_github()
+
+
 MODOS = {
     "resumen_partido":  modo_resumen_partido,
     "analisis_grupo":   modo_analisis_grupo,
     "fixture_dia":      modo_fixture_dia,
     "previa_argentina": modo_previa_argentina,
     "dato_curioso":     modo_dato_curioso,
+    "figura_fecha":     modo_figura_fecha,
+    "debate":           modo_debate,
+    "numero_dia":       modo_numero_dia,
 }
 
 if __name__ == "__main__":

@@ -11,6 +11,9 @@ on:
     - cron: "0 12 * * *"   # 09:00 AR — fixture del día
     - cron: "0 13 * * *"   # 10:00 AR — previa de Argentina
     - cron: "0 14 * * *"   # 11:00 AR — análisis de grupo
+    - cron: "0 16 * * *"   # 13:00 AR — número del día
+    - cron: "0 18 * * *"   # 15:00 AR — debate
+    - cron: "0 10 * * *"   # 07:00 AR — figura de la fecha (de la jornada anterior)
 
   workflow_dispatch:
     inputs:
@@ -25,6 +28,9 @@ on:
           - fixture_dia
           - previa_argentina
           - dato_curioso
+          - figura_fecha
+          - debate
+          - numero_dia
       preview:
         description: "Solo preview (no publica)"
         required: false
@@ -113,6 +119,42 @@ jobs:
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
         run: python bot.py analisis_grupo
+
+      - name: Numero del dia
+        if: github.event_name == 'schedule' && github.event.schedule == '0 16 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py numero_dia
+
+      - name: Debate
+        if: github.event_name == 'schedule' && github.event.schedule == '0 18 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py debate
+
+      - name: Figura de la fecha
+        if: github.event_name == 'schedule' && github.event.schedule == '0 10 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py figura_fecha
 
       - name: Manual
         if: github.event_name == 'workflow_dispatch'

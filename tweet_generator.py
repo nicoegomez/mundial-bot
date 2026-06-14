@@ -136,3 +136,48 @@ NUNCA escribas "los datos llegaron vacíos" ni nada similar. Generá un dato rea
 y verificable con tu conocimiento del Mundial y su historia.
 Tono: fascinación periodística, que invite a compartir.
 """, datos)
+
+    # ── FIGURA DE LA FECHA ────────────────────────────────────────────────────
+
+    def tweet_figura_fecha(self, datos: dict) -> str:
+        return self._generar("""
+Elegí y presentá la FIGURA DE LA FECHA del Mundial según los partidos jugados.
+Recibís los goleadores y resultados de la jornada. Tu tweet debe:
+1. Nombrar al jugador más determinante de la fecha (goles, doblete, partido decisivo)
+2. Dar sus números concretos de la jornada
+3. Una frase que justifique por qué fue la figura
+4. Si hay un argentino destacado, dale prioridad
+Podés cerrar con una afirmación con autoridad ("no hubo con qué") o dejar abierta
+la discusión ("¿alguien la rompió más?"). Variá el cierre.
+Tono: contundente, de periodista que se la juega con su elección.
+""", datos)
+
+    # ── DEBATE / PREGUNTA ─────────────────────────────────────────────────────
+
+    def tweet_debate(self, datos: dict) -> str:
+        return self._generar("""
+Generá un tweet de DEBATE sobre el Mundial que invite a la interacción.
+Recibís el estado del torneo (partidos jugados, datos). Tu tweet puede ser:
+- Una PREGUNTA abierta a los seguidores (la sorpresa del Mundial, la decepción,
+  el candidato que más convence, etc.)
+- O una AFIRMACIÓN con autoridad que invite a que la discutan o la banquen
+Elegí UNO de los dos enfoques (variá entre tweets). El tema tiene que estar
+anclado en algo real que pasó en el torneo, no genérico.
+Si involucra a Argentina, mejor. Tono: el de un periodista que tira la posta
+y sabe que va a generar respuestas. Cercano pero con criterio.
+""", datos)
+
+    # ── NÚMERO DEL DÍA ────────────────────────────────────────────────────────
+
+    def tweet_numero_dia(self, datos: dict) -> str:
+        return self._generar("""
+Generá el NÚMERO DEL DÍA: un tweet construido alrededor de UNA estadística potente
+del Mundial. Recibís datos del torneo (goles, partidos, promedios).
+Estructura ideal:
+1. Empezá con el número, bien destacado y claro
+2. Explicá qué significa y por qué es llamativo
+3. Un contexto o comparación que lo haga aún más interesante
+El número tiene que ser real (usá los datos que te paso o tu conocimiento verificable).
+Formato muy compartible, directo al grano.
+Tono: impactante, de esos tweets que dan ganas de retuitear.
+""", datos)

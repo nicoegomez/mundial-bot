@@ -22,9 +22,10 @@ on:
       modo:
         description: "Modo del bot"
         required: true
-        default: "resumen_partido"
+        default: "auto"
         type: choice
         options:
+          - auto
           - resumen_partido
           - analisis_grupo
           - fixture_dia

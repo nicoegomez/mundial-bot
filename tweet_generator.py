@@ -167,9 +167,24 @@ Si involucra a Argentina, mejor. Tono: el de un periodista que tira la posta
 y sabe que va a generar respuestas. Cercano pero con criterio.
 """, datos)
 
-    # ── NÚMERO DEL DÍA ────────────────────────────────────────────────────────
+    # ── NOTICIA ───────────────────────────────────────────────────────────────
 
-    def tweet_numero_dia(self, datos: dict) -> str:
+    def tweet_noticia(self, datos: dict) -> str:
+        return self._generar("""
+Recibís titulares de noticias recientes del Mundial 2026 (de Google News).
+Elegí la noticia MÁS relevante e interesante (prioridad a las de Argentina) y generá
+un tweet que la COMENTE o RESUMA con tus propias palabras.
+
+REGLAS CRÍTICAS:
+- NO copies el titular textual. Reescribilo completamente con tu redacción.
+- NO incluyas links ni URLs (encarece el tweet y no aporta).
+- NO inventes datos que no estén en los titulares. Si no estás seguro de un dato,
+  mantenete general y no afirmes cosas específicas que no podés verificar.
+- Aportá una lectura periodística: por qué importa, qué significa para Argentina o el torneo.
+- Si los titulares son confusos o poco confiables, elegí el más sólido o generá
+  un comentario general sobre el tema sin afirmar detalles dudosos.
+Tono: periodista que comparte y contextualiza una novedad, con criterio.
+""", datos)
         return self._generar("""
 Generá el NÚMERO DEL DÍA: un tweet construido alrededor de UNA estadística potente
 del Mundial. Recibís datos del torneo (goles, partidos, promedios).

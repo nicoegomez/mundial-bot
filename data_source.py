@@ -33,6 +33,31 @@ FUENTES = [
 
 ARGENTINA = "Argentina"
 
+# Mapeo de países (nombres como vienen en openfootball) a emoji de bandera
+BANDERAS = {
+    "Argentina": "🇦🇷", "Brazil": "🇧🇷", "France": "🇫🇷", "Spain": "🇪🇸",
+    "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Germany": "🇩🇪", "Portugal": "🇵🇹", "Netherlands": "🇳🇱",
+    "Belgium": "🇧🇪", "Italy": "🇮🇹", "Croatia": "🇭🇷", "Uruguay": "🇺🇾",
+    "Mexico": "🇲🇽", "USA": "🇺🇸", "Canada": "🇨🇦", "Japan": "🇯🇵",
+    "South Korea": "🇰🇷", "Australia": "🇦🇺", "Morocco": "🇲🇦", "Senegal": "🇸🇳",
+    "Switzerland": "🇨🇭", "Denmark": "🇩🇰", "Poland": "🇵🇱", "Serbia": "🇷🇸",
+    "Czech Republic": "🇨🇿", "Ecuador": "🇪🇨", "Paraguay": "🇵🇾", "Colombia": "🇨🇴",
+    "Peru": "🇵🇪", "Chile": "🇨🇱", "Qatar": "🇶🇦", "Saudi Arabia": "🇸🇦",
+    "Iran": "🇮🇷", "Ghana": "🇬🇭", "Nigeria": "🇳🇬", "Cameroon": "🇨🇲",
+    "Tunisia": "🇹🇳", "Algeria": "🇩🇿", "Egypt": "🇪🇬", "South Africa": "🇿🇦",
+    "Austria": "🇦🇹", "Jordan": "🇯🇴", "Turkey": "🇹🇷", "Bosnia & Herzegovina": "🇧🇦",
+    "Norway": "🇳🇴", "Sweden": "🇸🇪", "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Wales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+    "Ukraine": "🇺🇦", "Costa Rica": "🇨🇷", "Panama": "🇵🇦", "Jamaica": "🇯🇲",
+    "New Zealand": "🇳🇿", "Cape Verde": "🇨🇻", "Ivory Coast": "🇨🇮", "Mali": "🇲🇱",
+    "Uzbekistan": "🇺🇿", "Iraq": "🇮🇶", "UAE": "🇦🇪", "Bolivia": "🇧🇴",
+    "Venezuela": "🇻🇪", "Honduras": "🇭🇳", "Curaçao": "🇨🇼", "Haiti": "🇭🇹",
+}
+
+
+def bandera(pais: str) -> str:
+    """Devuelve el emoji de bandera del país, o cadena vacía si no está."""
+    return BANDERAS.get(pais, "")
+
 
 class WorldCupData:
     def __init__(self):
@@ -162,10 +187,13 @@ class WorldCupData:
     @staticmethod
     def marcador(match: dict) -> str:
         t1, t2 = match["team1"], match["team2"]
+        b1, b2 = bandera(t1), bandera(t2)
+        n1 = f"{b1} {t1}".strip()
+        n2 = f"{t2} {b2}".strip()
         if "score" in match and "ft" in match["score"]:
             g1, g2 = match["score"]["ft"]
-            return f"{t1} {g1}-{g2} {t2}"
-        return f"{t1} vs {t2}"
+            return f"{n1} {g1}-{g2} {n2}"
+        return f"{n1} vs {n2}"
 
     @staticmethod
     def goles_texto(match: dict) -> str:
@@ -182,8 +210,10 @@ class WorldCupData:
     def formatear_tabla(tabla: list) -> str:
         lineas = []
         for t in tabla:
+            b = bandera(t["nombre"])
+            nombre = f"{b} {t['nombre']}".strip()
             lineas.append(
-                f"{t['posicion']}. {t['nombre']}: {t['pts']}pts | "
+                f"{t['posicion']}. {nombre}: {t['pts']}pts | "
                 f"{t['pj']}PJ | DG:{t['dg']:+d} | GF:{t['gf']}"
             )
         return "\n".join(lineas)

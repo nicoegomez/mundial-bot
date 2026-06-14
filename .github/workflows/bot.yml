@@ -14,6 +14,8 @@ on:
     - cron: "0 16 * * *"   # 13:00 AR — número del día
     - cron: "0 18 * * *"   # 15:00 AR — debate
     - cron: "0 10 * * *"   # 07:00 AR — figura de la fecha (de la jornada anterior)
+    - cron: "0 15 * * *"   # 12:00 AR — noticia (mediodía)
+    - cron: "0 23 * * *"   # 20:00 AR — noticia (noche)
 
   workflow_dispatch:
     inputs:
@@ -31,6 +33,7 @@ on:
           - figura_fecha
           - debate
           - numero_dia
+          - noticia
       preview:
         description: "Solo preview (no publica)"
         required: false
@@ -155,6 +158,30 @@ jobs:
           PYTHONIOENCODING:  utf-8
           GITHUB_ACTIONS:    "true"
         run: python bot.py figura_fecha
+
+      - name: Noticia mediodia
+        if: github.event_name == 'schedule' && github.event.schedule == '0 15 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py noticia
+
+      - name: Noticia noche
+        if: github.event_name == 'schedule' && github.event.schedule == '0 23 * * *'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          X_API_KEY:         ${{ secrets.X_API_KEY }}
+          X_API_SECRET:      ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:    ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET:   ${{ secrets.X_ACCESS_SECRET }}
+          PYTHONIOENCODING:  utf-8
+          GITHUB_ACTIONS:    "true"
+        run: python bot.py noticia
 
       - name: Manual
         if: github.event_name == 'workflow_dispatch'

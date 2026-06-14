@@ -20,6 +20,7 @@ from datetime import datetime, timezone, timedelta
 from data_source import WorldCupData, ARGENTINA
 from tweet_generator import TweetGenerator
 import analisis as anl
+import noticias as news
 from state_manager import (
     cargar_estado, guardar_estado,
     evento_ya_procesado, marcar_evento_procesado,
@@ -369,6 +370,37 @@ def modo_numero_dia(preview: bool):
     commit_estado_en_github()
 
 
+def modo_noticia(preview: bool):
+    estado = cargar_estado()
+    hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # Permitimos hasta 2 noticias por día (mañana y tarde)
+    hora = datetime.now(timezone.utc).hour
+    franja = "am" if hora < 18 else "pm"
+    nid = f"noticia_{hoy}_{franja}"
+
+    if evento_ya_procesado(estado, nid):
+        log.info("Noticia de esta franja ya tuiteada.")
+        guardar_estado(estado)
+        return
+
+    combinadas = news.noticias_combinadas()
+    if not combinadas["argentina"] and not combinadas["general"]:
+        log.info("No se encontraron noticias.")
+        guardar_estado(estado)
+        return
+
+    datos = {
+        "noticias_argentina": [n["titulo"] for n in combinadas["argentina"]],
+        "noticias_generales": [n["titulo"] for n in combinadas["general"]],
+    }
+    tweet = gen.tweet_noticia(datos)
+    if tweet:
+        publicar(tweet, preview, estado)
+        marcar_evento_procesado(estado, nid)
+    guardar_estado(estado)
+    commit_estado_en_github()
+
+
 MODOS = {
     "resumen_partido":  modo_resumen_partido,
     "analisis_grupo":   modo_analisis_grupo,
@@ -378,6 +410,7 @@ MODOS = {
     "figura_fecha":     modo_figura_fecha,
     "debate":           modo_debate,
     "numero_dia":       modo_numero_dia,
+    "noticia":          modo_noticia,
 }
 
 if __name__ == "__main__":

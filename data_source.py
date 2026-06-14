@@ -197,13 +197,22 @@ class WorldCupData:
 
     @staticmethod
     def goles_texto(match: dict) -> str:
-        """Lista de goleadores con minuto."""
+        """Lista de goleadores con minuto. Marca penales y goles en contra."""
         lineas = []
         for i, lado in enumerate(("goals1", "goals2"), 1):
             equipo = match[f"team{i}"]
             for g in match.get(lado, []):
-                pen = " (pen)" if g.get("penalty") else ""
-                lineas.append(f"{g['name']} {g['minute']}'{pen} ({equipo})")
+                minuto = g.get("minute", "")
+                offset = g.get("offset")
+                min_txt = f"{minuto}+{offset}'" if offset else f"{minuto}'"
+                if g.get("owngoal"):
+                    # El gol cuenta para 'equipo' pero lo hizo un jugador rival
+                    lineas.append(
+                        f"{g['name']} {min_txt} (gol en contra, suma para {equipo})"
+                    )
+                else:
+                    pen = " (penal)" if g.get("penalty") else ""
+                    lineas.append(f"{g['name']} {min_txt}{pen} ({equipo})")
         return "\n".join(lineas)
 
     @staticmethod

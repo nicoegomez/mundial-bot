@@ -401,6 +401,54 @@ def modo_noticia(preview: bool):
     commit_estado_en_github()
 
 
+def modo_auto(preview: bool):
+    """
+    Modo inteligente: decide qué publicar según la hora UTC.
+    Pensado para ser disparado cada 15 min por un cron externo.
+
+    - Siempre intenta resumen de partidos (si hay alguno nuevo terminado).
+    - En horas específicas, además publica el contenido programado del día.
+    Cada modo tiene su propia anti-repetición, así que es seguro llamarlo seguido.
+    """
+    hora = datetime.now(timezone.utc).hour
+    minuto = datetime.now(timezone.utc).minute
+
+    # 1) Resumen de partidos: SIEMPRE se intenta (su estado evita duplicados).
+    #    Es lo más sensible al tiempo, así que va en cada corrida.
+    log.info("AUTO: chequeando partidos terminados...")
+    try:
+        modo_resumen_partido(preview)
+    except Exception as e:
+        log.error(f"AUTO resumen falló: {e}")
+
+    # 2) Contenido programado: solo en la primera corrida de cada hora clave
+    #    (minuto < 15 para que caiga una sola vez aunque corra cada 15 min).
+    if minuto >= 15:
+        log.info("AUTO: no es ventana de contenido programado.")
+        return
+
+    programado = {
+        10: modo_figura_fecha,     # 07:00 AR
+        11: modo_dato_curioso,     # 08:00 AR
+        12: modo_fixture_dia,      # 09:00 AR
+        13: modo_previa_argentina, # 10:00 AR
+        14: modo_analisis_grupo,   # 11:00 AR
+        15: modo_noticia,          # 12:00 AR
+        16: modo_numero_dia,       # 13:00 AR
+        18: modo_debate,           # 15:00 AR
+        23: modo_noticia,          # 20:00 AR
+    }
+    fn = programado.get(hora)
+    if fn:
+        log.info(f"AUTO: ejecutando contenido programado de las {hora}:00 UTC")
+        try:
+            fn(preview)
+        except Exception as e:
+            log.error(f"AUTO programado ({hora}h) falló: {e}")
+    else:
+        log.info(f"AUTO: sin contenido programado para las {hora}:00 UTC")
+
+
 MODOS = {
     "resumen_partido":  modo_resumen_partido,
     "analisis_grupo":   modo_analisis_grupo,
@@ -411,6 +459,7 @@ MODOS = {
     "debate":           modo_debate,
     "numero_dia":       modo_numero_dia,
     "noticia":          modo_noticia,
+    "auto":             modo_auto,
 }
 
 if __name__ == "__main__":

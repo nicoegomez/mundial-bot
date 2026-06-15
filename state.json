@@ -25,8 +25,9 @@
     "fixture_2026-06-15",
     "resumen_2026-06-15_Spain_Cape_Verde",
     "debate_2026-06-15",
-    "noticia_2026-06-15_pm"
+    "noticia_2026-06-15_pm",
+    "resumen_2026-06-15_Belgium_Egypt"
   ],
-  "ultimo_run": "2026-06-15T21:01:08.607970+00:00",
-  "tweets_hoy": 26
+  "ultimo_run": "2026-06-15T21:15:50.594175+00:00",
+  "tweets_hoy": 27
 }

@@ -28,8 +28,9 @@
     "noticia_2026-06-15_pm",
     "resumen_2026-06-15_Belgium_Egypt",
     "resumen_2026-06-15_Saudi_Arabia_Uruguay",
-    "noticia_2026-06-16_am"
+    "noticia_2026-06-16_am",
+    "resumen_2026-06-15_Iran_New_Zealand"
   ],
-  "ultimo_run": "2026-06-16T03:01:08.266316+00:00",
-  "tweets_hoy": 29
+  "ultimo_run": "2026-06-16T03:15:39.364558+00:00",
+  "tweets_hoy": 30
 }

@@ -210,6 +210,10 @@ REGLAS CRÍTICAS:
   un comentario general sobre el tema sin afirmar detalles dudosos.
 Tono: periodista que comparte y contextualiza una novedad, con criterio.
 """, datos)
+
+    # ── NÚMERO DEL DÍA ────────────────────────────────────────────────────────
+
+    def tweet_numero_dia(self, datos: dict) -> str:
         return self._generar("""
 Generá el NÚMERO DEL DÍA: un tweet construido alrededor de UNA estadística potente
 del Mundial. Recibís datos del torneo (goles, partidos, promedios).

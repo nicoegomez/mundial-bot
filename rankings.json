@@ -1,1 +1,17 @@
-{"partidos": []}
+{
+  "partidos": [
+    {
+      "clave": "?_?",
+      "local": "?",
+      "visitante": "?",
+      "xg_local": 0.52,
+      "xg_visitante": 3.14,
+      "distancia_local": 109.2,
+      "distancia_visitante": 109.4,
+      "remates_local": 6,
+      "remates_visitante": 26,
+      "posesion_local": 28.8,
+      "posesion_visitante": 58.7
+    }
+  ]
+}

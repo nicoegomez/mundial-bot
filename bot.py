@@ -17,7 +17,7 @@ import argparse
 import tweepy
 from datetime import datetime, timezone, timedelta
 
-from data_source import WorldCupData, ARGENTINA, canales_partido
+from data_source import WorldCupData, ARGENTINA, canales_partido, bandera as ds_bandera, nombre_es as ds_nombre_es
 from tweet_generator import TweetGenerator
 import analisis as anl
 import noticias as news
@@ -212,11 +212,17 @@ def modo_fixture_dia(preview: bool):
         guardar_estado(estado)
         return
 
+    import fixture_tv as ftv
     lista = []
     arg_juega = False
     for m in partidos:
-        hora = wc.hora_argentina(m)
-        lista.append(f"{m['team1']} vs {m['team2']} ({hora}hs AR) — {m.get('group','')}")
+        # Hora exacta del fixture si está; si no, conversión aproximada.
+        hora = ftv.hora_ar_de(m["team1"], m["team2"]) or wc.hora_argentina(m)
+        canales = ftv.canales_de(m["team1"], m["team2"]) or ""
+        linea = f"{m['team1']} vs {m['team2']} ({hora}hs AR) — {m.get('group','')}"
+        if canales:
+            linea += f" {canales}"
+        lista.append(linea)
         if ARGENTINA in (m["team1"], m["team2"]):
             arg_juega = True
 
@@ -260,10 +266,16 @@ def modo_previa_argentina(preview: bool):
     # tipo "los dos están sin puntos").
     grupo_arranco = bool(tabla) and any(t["pj"] > 0 for t in tabla)
 
+    # Hora exacta: si el partido está en el fixture, usamos esa hora (precisa,
+    # ya en GMT-3); si no, caemos a la conversión aproximada desde UTC.
+    import fixture_tv as ftv
+    hora_exacta = ftv.hora_ar_de(prox["team1"], prox["team2"])
+    hora_ar = hora_exacta if hora_exacta else wc.hora_argentina(prox)
+
     datos = {
         "rival":          rival,
         "fecha":          prox.get("date", ""),
-        "hora_argentina": wc.hora_argentina(prox),
+        "hora_argentina": hora_ar,
         "estadio":        prox.get("ground", ""),
         "grupo":          grupo,
         "grupo_arranco":  grupo_arranco,
@@ -535,7 +547,16 @@ def modo_stats_partido(preview: bool):
 
         hilo = gen.hilo_stats_partido(stats, cantidad=cantidad)
         if hilo:
-            publicar_hilo(hilo, preview, estado)
+            # La placa de texto va como PRIMER tweet del hilo (el gancho visual).
+            # Usa los nombres del PDF (equipo_local/visitante) para las banderas.
+            eq_local = stats.get("equipo_local", m["team1"])
+            eq_visit = stats.get("equipo_visitante", m["team2"])
+            bl = ds_bandera(eq_local)
+            bv = ds_bandera(eq_visit)
+            placa = gen.placa_stats(stats, bl, bv,
+                                    ds_nombre_es(eq_local), ds_nombre_es(eq_visit))
+            hilo_completo = [placa] + hilo
+            publicar_hilo(hilo_completo, preview, estado)
             marcar_evento_procesado(estado, sid)
             # Registrar en el histórico de rankings del torneo
             try:

@@ -92,6 +92,64 @@ class TweetGenerator:
         t = re.sub(r'\n*\*?\(?\d+\s*caracteres?[^)]*\)?\*?\s*$', '', t, flags=re.IGNORECASE)
         return t.strip()
 
+    @staticmethod
+    def _barra(val1, val2, ancho: int = 8) -> str:
+        """Barra comparativa proporcional entre dos valores (caracteres Unicode)."""
+        try:
+            v1, v2 = float(val1), float(val2)
+        except (ValueError, TypeError):
+            return "░" * ancho
+        total = v1 + v2
+        if total == 0:
+            return "░" * ancho
+        n1 = round((v1 / total) * ancho)
+        n1 = max(1, min(ancho - 1, n1))
+        return "▓" * n1 + "░" * (ancho - n1)
+
+    @staticmethod
+    def placa_stats(stats: dict, bandera_local: str = "", bandera_visit: str = "",
+                    nombre_local: str = "", nombre_visit: str = "") -> str:
+        """
+        Genera una 'placa' de texto con barras comparativas a partir de las stats
+        de la FIFA. Es determinística (no usa API): exacta y sin costo extra.
+        Devuelve el texto listo para publicar como primer tweet del hilo.
+        Si se pasan nombre_local/nombre_visit (en español), se usan; si no, los del PDF.
+        """
+        local = nombre_local or stats.get("equipo_local", "")
+        visit = nombre_visit or stats.get("equipo_visitante", "")
+        gl = stats.get("goles_local", "")
+        gv = stats.get("goles_visitante", "")
+
+        # Encabezado con banderas y marcador
+        bl = f"{bandera_local} " if bandera_local else ""
+        bv = f" {bandera_visit}" if bandera_visit else ""
+        lineas = [f"{bl}{local} {gl}-{gv} {visit}{bv}", ""]
+
+        # Filas de la placa: (etiqueta, valor_local, valor_visit, formato)
+        filas = []
+        if "xg_local" in stats:
+            filas.append(("xG", stats["xg_local"], stats["xg_visitante"], "f"))
+        if "posesion_local" in stats:
+            filas.append(("Posesión", stats["posesion_local"], stats["posesion_visitante"], "pct"))
+        if "remates_local" in stats:
+            filas.append(("Remates", stats["remates_local"], stats["remates_visitante"], "i"))
+        if "pase_pct_local" in stats:
+            filas.append(("Pases OK", stats["pase_pct_local"], stats["pase_pct_visitante"], "pct"))
+
+        for etiqueta, v1, v2, fmt in filas:
+            barra = TweetGenerator._barra(v1, v2)
+            if fmt == "pct":
+                s1, s2 = f"{round(float(v1))}%", f"{round(float(v2))}%"
+            elif fmt == "f":
+                s1, s2 = f"{float(v1):.2f}", f"{float(v2):.2f}"
+            else:
+                s1, s2 = f"{v1}", f"{v2}"
+            lineas.append(f"{s1} {barra} {s2} · {etiqueta}")
+
+        lineas.append("")
+        lineas.append("📊 Datos FIFA · #Mundial2026")
+        return "\n".join(lineas)
+
     # ── RESUMEN DE PARTIDO ────────────────────────────────────────────────────
 
     def tweet_resumen_partido(self, datos: dict) -> str:

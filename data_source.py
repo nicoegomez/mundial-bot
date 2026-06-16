@@ -283,3 +283,29 @@ SELECCIONES_TV_ABIERTA = {
     "Brazil", "France", "Spain", "England", "Germany", "Portugal",
     "Netherlands", "Italy", "Uruguay", "Mexico",
 }
+
+
+# ── NOMBRES DE PAÍSES EN ESPAÑOL (para placas y textos) ───────────────────────
+NOMBRES_ES = {
+    "Brazil": "Brasil", "Morocco": "Marruecos", "Germany": "Alemania",
+    "Spain": "España", "France": "Francia", "England": "Inglaterra",
+    "Netherlands": "Países Bajos", "Belgium": "Bélgica", "Croatia": "Croacia",
+    "Switzerland": "Suiza", "Sweden": "Suecia", "Japan": "Japón",
+    "South Korea": "Corea del Sur", "Saudi Arabia": "Arabia Saudita",
+    "USA": "EE.UU.", "Mexico": "México", "Canada": "Canadá", "Qatar": "Catar",
+    "Australia": "Australia", "Turkey": "Turquía", "Tunisia": "Túnez",
+    "Ivory Coast": "Costa de Marfil", "Ecuador": "Ecuador", "Iran": "Irán",
+    "New Zealand": "Nueva Zelanda", "Egypt": "Egipto", "Uruguay": "Uruguay",
+    "Cape Verde": "Cabo Verde", "Senegal": "Senegal", "Iraq": "Irak",
+    "Norway": "Noruega", "Argentina": "Argentina", "Algeria": "Argelia",
+    "Austria": "Austria", "Jordan": "Jordania", "Portugal": "Portugal",
+    "DR Congo": "RD Congo", "Uzbekistan": "Uzbekistán", "Colombia": "Colombia",
+    "Ghana": "Ghana", "Panama": "Panamá", "Scotland": "Escocia", "Haiti": "Haití",
+    "Paraguay": "Paraguay", "Curaçao": "Curazao", "Czech Republic": "Chequia",
+    "South Africa": "Sudáfrica", "Bosnia & Herzegovina": "Bosnia y Herz.",
+}
+
+
+def nombre_es(pais: str) -> str:
+    """Devuelve el nombre del país en español, o el original si no está mapeado."""
+    return NOMBRES_ES.get(pais, pais)

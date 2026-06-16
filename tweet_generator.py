@@ -211,6 +211,36 @@ Es el resumen del FIXTURE DEL DÍA en el Mundial. Tu tweet debe incluir:
 Tono: anticipatorio, generando expectativa para la jornada.
 """, datos)
 
+    # ── NÚMERO DEL DÍA ────────────────────────────────────────────────────────
+
+    def tweet_numero_dia(self, datos: dict) -> str:
+        import random as _random
+        enfoques = [
+            "Elegí un número llamativo del torneo hasta ahora (goles totales, promedio "
+            "de goles por partido, goleadas, etc.) y construí el tweet alrededor de ese dato.",
+            "Tomá un número sorprendente y planteá una pregunta al lector a partir de él, "
+            "para invitar a responder.",
+            "Buscá un dato comparativo (este Mundial vs lo esperado, un récord en formación, "
+            "etc.) que dé que hablar.",
+        ]
+        enfoque = _random.choice(enfoques)
+        return self._generar(f"""
+Generá el tweet del NÚMERO DEL DÍA: un dato numérico del Mundial 2026 que sea
+llamativo y comentable.
+
+ENFOQUE DE HOY (variá según esto):
+{enfoque}
+
+REGLAS:
+- El número es el protagonista. Estilo MisterChip: dato adelante, contexto que da escala.
+- SOLO usá números que estén en la información que te paso o que sean datos duros del
+  Mundial 2026 (48 equipos, 12 grupos, 104 partidos, etc.). NO inventes cifras.
+- Si no tenés un número sólido para destacar, hacé un tweet sobre el formato o el contexto
+  del torneo, sin inventar estadísticas.
+- Cerrá invitando suavemente a la interacción cuando quede natural.
+- Una bandera o emoji si suma. Sin hashtags.
+""", datos)
+
     # ── PREVIA DE ARGENTINA ───────────────────────────────────────────────────
 
     def tweet_previa_argentina(self, datos: dict) -> str:

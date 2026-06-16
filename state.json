@@ -30,8 +30,9 @@
     "resumen_2026-06-15_Saudi_Arabia_Uruguay",
     "noticia_2026-06-16_am",
     "resumen_2026-06-15_Iran_New_Zealand",
-    "figura_2026-06-16"
+    "figura_2026-06-16",
+    "dato_2026-06-16"
   ],
-  "ultimo_run": "2026-06-16T11:01:08.572206+00:00",
-  "tweets_hoy": 31
+  "ultimo_run": "2026-06-16T11:01:29.098163+00:00",
+  "tweets_hoy": 32
 }

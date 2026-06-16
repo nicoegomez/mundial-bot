@@ -131,7 +131,7 @@ def commit_estado_en_github():
     try:
         os.system('git config --global user.email "bot@mundial2026.com"')
         os.system('git config --global user.name "Mundial Bot"')
-        os.system("git add state.json")
+        os.system("git add state.json rankings.json")
         os.system('git commit -m "bot: actualizar estado [skip ci]" --allow-empty')
         os.system("git push")
         log.info("Estado commiteado a GitHub.")

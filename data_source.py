@@ -245,3 +245,39 @@ class WorldCupData:
             return f"{h:02d}:{mn:02d}"
         except Exception:
             return time_str
+
+
+# ── TRANSMISIONES DE TV EN ARGENTINA (Mundial 2026) ───────────────────────────
+# Fuente: acuerdos de derechos confirmados para Argentina.
+#   DSports/DGO: los 104 partidos (único con todo). También vía Flow, Paramount+, Prime Video.
+#   Telefe (aire, gratis): 32 partidos — todos los de Argentina, inaugural, semis, final.
+#   TyC Sports (cable): 52 partidos — todos los de Argentina + cruces.
+#   TV Pública (aire, gratis): ~10 partidos, incluidos todos los de Argentina.
+#   Disney+ Premium (ESPN): plan premium.
+
+def canales_partido(team1: str, team2: str, fase: str = "grupos") -> str:
+    """
+    Devuelve el texto de los canales que pasan un partido en Argentina,
+    listo para poner entre paréntesis al final de una previa.
+
+    - Si juega Argentina: todas las señales (priorizando las gratis de aire).
+    - Otros partidos de fase de grupos: DSports (tiene todo). Telefe/TyC para los grandes.
+    - El detalle fino (qué partido puntual pasa cada canal parcial) no siempre se
+      conoce de antemano, así que para no afirmar de más, en partidos comunes
+      mostramos la opción segura (DSports/DGO) que SÍ tiene todos.
+    """
+    es_arg = ARGENTINA in (team1, team2)
+
+    if es_arg:
+        # Los partidos de Argentina van por todas las señales, gratis incluidas.
+        return "📺 TV Pública, Telefe, TyC Sports, DSports y DGO"
+
+    # Partidos sin Argentina: DSports tiene el 100%. Es el dato seguro.
+    return "📺 DSports / DGO"
+
+
+# Selecciones "grandes" cuyos partidos suelen ir también por TV abierta/cable parcial.
+SELECCIONES_TV_ABIERTA = {
+    "Brazil", "France", "Spain", "England", "Germany", "Portugal",
+    "Netherlands", "Italy", "Uruguay", "Mexico",
+}

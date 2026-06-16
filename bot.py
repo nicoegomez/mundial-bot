@@ -17,11 +17,12 @@ import argparse
 import tweepy
 from datetime import datetime, timezone, timedelta
 
-from data_source import WorldCupData, ARGENTINA
+from data_source import WorldCupData, ARGENTINA, canales_partido
 from tweet_generator import TweetGenerator
 import analisis as anl
 import noticias as news
 import fifa_reports as fifa
+import rankings as rk
 from state_manager import (
     cargar_estado, guardar_estado,
     evento_ya_procesado, marcar_evento_procesado,
@@ -267,6 +268,7 @@ def modo_previa_argentina(preview: bool):
         "grupo":          grupo,
         "grupo_arranco":  grupo_arranco,
         "tabla_grupo":    wc.formatear_tabla(tabla) if grupo_arranco else "",
+        "canales":        canales_partido(prox["team1"], prox["team2"]),
     }
     tweet = gen.tweet_previa_argentina(datos)
     if tweet:
@@ -524,7 +526,7 @@ def modo_stats_partido(preview: bool):
 
         es_grande = (m["team1"] in SELECCIONES_GRANDES or
                      m["team2"] in SELECCIONES_GRANDES)
-        cantidad = 5 if es_grande else 3
+        cantidad = 6 if es_grande else 4
 
         # Sumamos contexto del marcador y goleadores
         stats["marcador"] = wc.marcador(m)
@@ -535,8 +537,34 @@ def modo_stats_partido(preview: bool):
         if hilo:
             publicar_hilo(hilo, preview, estado)
             marcar_evento_procesado(estado, sid)
+            # Registrar en el histórico de rankings del torneo
+            try:
+                rk.registrar_partido(stats)
+            except Exception as e:
+                log.error(f"No se pudo registrar en rankings: {e}")
             # Un hilo por corrida para no saturar
             break
+
+    guardar_estado(estado)
+    commit_estado_en_github()
+
+
+def modo_rankings(preview: bool):
+    """
+    Publica un tweet con los líderes estadísticos del torneo (xG, velocidad, físico).
+    Útil para días sin partidos o con poca actividad. Usa el histórico acumulado.
+    """
+    estado = cargar_estado()
+    datos = rk.calcular_rankings()
+
+    if not datos or datos.get("total_partidos", 0) < 2:
+        log.info("Aún no hay suficientes datos para un ranking del torneo.")
+        guardar_estado(estado)
+        return
+
+    tweet = gen.tweet_rankings_torneo(datos)
+    if tweet:
+        publicar(tweet, preview, estado)
 
     guardar_estado(estado)
     commit_estado_en_github()
@@ -553,6 +581,7 @@ MODOS = {
     "numero_dia":       modo_numero_dia,
     "noticia":          modo_noticia,
     "stats_partido":    modo_stats_partido,
+    "rankings":         modo_rankings,
     "auto":             modo_auto,
 }
 

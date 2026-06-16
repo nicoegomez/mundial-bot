@@ -206,5 +206,60 @@ def extraer_stats(team1: str, team2: str) -> dict | None:
         log.warning("No se pudo extraer xG del reporte; quizá cambió el formato.")
         return None
 
+    # Datos individuales de jugadores (físico): el que más corrió, el más rápido, etc.
+    individuales = _extraer_fisico_jugadores(texto)
+    if individuales:
+        stats["destacados_fisicos"] = individuales
+
     log.info(f"Stats FIFA extraídas: {len(stats)} campos")
     return stats
+
+
+def _extraer_fisico_jugadores(texto: str) -> dict | None:
+    """
+    Extrae datos físicos individuales de la tabla 'Physical Data':
+    el jugador que más distancia recorrió, el más rápido y el que más sprintó.
+    Devuelve un dict con esos destacados, o None.
+    """
+    # Patrón de jugador de campo: dorsal NOMBRE dist z1 z2 z3 z4 z5 hsr sprints topspeed
+    patron = re.compile(
+        r'^(\d+)\s+([A-Za-zÀ-ÿ\'\.\s]+?)\s+'
+        r'([\d.]+)\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+'
+        r'([\d.]+)\s+([\d.]+)\s*$',
+        re.MULTILINE
+    )
+    jugadores = []
+    for m in patron.finditer(texto):
+        try:
+            dist = float(m.group(3))
+            sprints = float(m.group(4))
+            vel = float(m.group(5))
+            # Filtro de cordura: distancia entre 1km y 16km, velocidad entre 20 y 40
+            if 1000 <= dist <= 16000 and 20 <= vel <= 40:
+                jugadores.append({
+                    "nombre": m.group(2).strip(),
+                    "distancia_km": round(dist / 1000, 1),
+                    "sprints": int(sprints),
+                    "velocidad_max": vel,
+                })
+        except (ValueError, IndexError):
+            continue
+
+    if not jugadores:
+        return None
+
+    # Quitamos duplicados por nombre (a veces hay ruido) y elegimos destacados
+    vistos = {}
+    for j in jugadores:
+        vistos[j["nombre"]] = j
+    unicos = list(vistos.values())
+
+    mas_corredor = max(unicos, key=lambda x: x["distancia_km"])
+    mas_rapido = max(unicos, key=lambda x: x["velocidad_max"])
+    mas_sprints = max(unicos, key=lambda x: x["sprints"])
+
+    return {
+        "mas_corredor": mas_corredor,
+        "mas_rapido": mas_rapido,
+        "mas_sprints": mas_sprints,
+    }

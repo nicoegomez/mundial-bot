@@ -36,6 +36,7 @@ on:
           - numero_dia
           - noticia
           - stats_partido
+          - rankings
       preview:
         description: "Solo preview (no publica)"
         required: false

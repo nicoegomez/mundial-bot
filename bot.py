@@ -21,6 +21,7 @@ from data_source import WorldCupData, ARGENTINA
 from tweet_generator import TweetGenerator
 import analisis as anl
 import noticias as news
+import fifa_reports as fifa
 from state_manager import (
     cargar_estado, guardar_estado,
     evento_ya_procesado, marcar_evento_procesado,
@@ -79,6 +80,35 @@ def publicar(texto: str, preview: bool, estado: dict):
         log.info(f"Tweet publicado. Total hoy: {estado['tweets_hoy']}")
     except Exception as e:
         log.error(f"Error al publicar: {e}")
+
+
+def publicar_hilo(tweets: list, preview: bool, estado: dict):
+    """Publica una lista de tweets como hilo encadenado (cada uno responde al anterior)."""
+    if not tweets:
+        log.warning("Hilo vacío, no se publica.")
+        return
+    tweets = [recortar_tweet(t) for t in tweets if t]
+
+    if preview:
+        print(f"\n{'='*60}\n  PREVIEW HILO ({len(tweets)} tweets)\n{'='*60}")
+        for i, t in enumerate(tweets, 1):
+            print(f"\n  [{i}/{len(tweets)}] ({len(t)} chars)\n{'-'*60}\n  {t}")
+        print(f"{'='*60}\n")
+        return
+
+    ultimo_id = None
+    for i, t in enumerate(tweets, 1):
+        try:
+            if ultimo_id is None:
+                resp = x_client.create_tweet(text=t)
+            else:
+                resp = x_client.create_tweet(text=t, in_reply_to_tweet_id=ultimo_id)
+            ultimo_id = resp.data["id"]
+            estado["tweets_hoy"] = estado.get("tweets_hoy", 0) + 1
+            log.info(f"Tweet {i}/{len(tweets)} del hilo publicado.")
+        except Exception as e:
+            log.error(f"Error publicando tweet {i} del hilo: {e}")
+            break  # si falla uno, cortamos el hilo (no dejar tweets sueltos colgando)
 
 
 # ── MODO: RESUMEN DE PARTIDOS TERMINADOS ──────────────────────────────────────
@@ -426,6 +456,13 @@ def modo_auto(preview: bool):
     except Exception as e:
         log.error(f"AUTO resumen falló: {e}")
 
+    # 1b) Hilos de stats avanzadas: también se intentan siempre. El reporte FIFA
+    #     puede tardar más que el resultado, así que conviene reintentar seguido.
+    try:
+        modo_stats_partido(preview)
+    except Exception as e:
+        log.error(f"AUTO stats falló: {e}")
+
     # 2) Contenido programado: solo en la primera corrida de cada hora clave
     #    (minuto < 15 para que caiga una sola vez aunque corra cada 15 min).
     if minuto >= 15:
@@ -454,6 +491,57 @@ def modo_auto(preview: bool):
         log.info(f"AUTO: sin contenido programado para las {hora}:00 UTC")
 
 
+SELECCIONES_GRANDES = {
+    "Argentina", "Brazil", "France", "Spain", "England", "Germany",
+    "Portugal", "Netherlands", "Italy", "Belgium", "Croatia", "Uruguay",
+}
+
+
+def modo_stats_partido(preview: bool):
+    """
+    Para cada partido terminado con reporte FIFA disponible, publica un HILO
+    de análisis estadístico avanzado (xG, posesión, físico, etc.).
+    Tanda completa (5 tweets) para partidos grandes; 3 para el resto.
+    """
+    estado = cargar_estado()
+    jugados = wc.partidos_jugados()
+
+    if not jugados:
+        log.info("No hay partidos jugados.")
+        guardar_estado(estado)
+        return
+
+    for m in jugados:
+        sid = f"stats_{m['date']}_{m['team1']}_{m['team2']}".replace(" ", "_")
+        if evento_ya_procesado(estado, sid):
+            continue
+
+        # ¿Hay reporte FIFA para este partido?
+        stats = fifa.extraer_stats(m["team1"], m["team2"])
+        if not stats:
+            # Todavía no está el reporte; lo intentará en la próxima corrida
+            continue
+
+        es_grande = (m["team1"] in SELECCIONES_GRANDES or
+                     m["team2"] in SELECCIONES_GRANDES)
+        cantidad = 5 if es_grande else 3
+
+        # Sumamos contexto del marcador y goleadores
+        stats["marcador"] = wc.marcador(m)
+        stats["goles"] = wc.goles_texto(m)
+        stats["es_argentina"] = ARGENTINA in (m["team1"], m["team2"])
+
+        hilo = gen.hilo_stats_partido(stats, cantidad=cantidad)
+        if hilo:
+            publicar_hilo(hilo, preview, estado)
+            marcar_evento_procesado(estado, sid)
+            # Un hilo por corrida para no saturar
+            break
+
+    guardar_estado(estado)
+    commit_estado_en_github()
+
+
 MODOS = {
     "resumen_partido":  modo_resumen_partido,
     "analisis_grupo":   modo_analisis_grupo,
@@ -464,6 +552,7 @@ MODOS = {
     "debate":           modo_debate,
     "numero_dia":       modo_numero_dia,
     "noticia":          modo_noticia,
+    "stats_partido":    modo_stats_partido,
     "auto":             modo_auto,
 }
 

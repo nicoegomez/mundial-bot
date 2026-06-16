@@ -211,9 +211,58 @@ REGLAS CRÍTICAS:
 Tono: periodista que comparte y contextualiza una novedad, con criterio.
 """, datos)
 
-    # ── NÚMERO DEL DÍA ────────────────────────────────────────────────────────
+    # ── HILO DE STATS AVANZADAS (FIFA) ────────────────────────────────────────
 
-    def tweet_numero_dia(self, datos: dict) -> str:
+    def hilo_stats_partido(self, datos: dict, cantidad: int = 4) -> list:
+        """
+        Genera un HILO (lista de tweets) con análisis estadístico avanzado de un
+        partido, usando datos oficiales del Technical Study Group de la FIFA.
+        Devuelve una lista de strings (cada uno un tweet del hilo).
+        """
+        import json as _json
+        system = ESTILO_BASE + f"""
+Generá un HILO de exactamente {cantidad} tweets con ANÁLISIS ESTADÍSTICO AVANZADO
+de un partido del Mundial, usando datos oficiales de la FIFA (Technical Study Group).
+
+Los datos incluyen xG (goles esperados), posesión, remates, pases, distancia
+recorrida, recuperaciones, formaciones, etc.
+
+ESTRUCTURA DEL HILO:
+- Tweet 1: el GANCHO. El dato más potente o contraintuitivo del partido (muchas
+  veces el xG cuenta una historia distinta al resultado). Tiene que invitar a seguir leyendo.
+- Tweets 2 a {cantidad}: cada uno desarrolla UN aspecto con números concretos
+  (eficiencia/xG, dominio territorial, despliegue físico, lo táctico, la figura por datos).
+- El último puede cerrar con una conclusión o lectura global.
+
+REGLAS CLAVE:
+- USÁ los números reales que te paso. NO inventes datos.
+- Explicá qué significan los números, no los tires sueltos. El valor está en la lectura.
+- El xG es tu mejor herramienta: si difiere del resultado, ESE es el titular.
+- Tono argentino periodístico, análisis de calidad, sin sonar a robot.
+- Cada tweet máximo 280 caracteres, apuntá a 230-250.
+- Si es Argentina, máxima profundidad y pasión medida.
+
+FORMATO DE RESPUESTA:
+- Devolvé los {cantidad} tweets separados por una línea con exactamente: ---
+- No numeres los tweets (nada de "1/", "2/"). El hilo se encadena solo.
+- Sin markdown, sin comillas, texto plano.
+"""
+        user = _json.dumps(datos, ensure_ascii=False, indent=2)
+        try:
+            resp = self.client.messages.create(
+                model=MODEL, max_tokens=1200,
+                system=system,
+                messages=[{"role": "user", "content": user}],
+            )
+            texto = resp.content[0].text.strip()
+            # Separar por --- y limpiar cada tweet
+            partes = [self._limpiar(p) for p in texto.split("---")]
+            tweets = [p for p in partes if p and len(p) > 10]
+            log.info(f"Hilo de stats generado: {len(tweets)} tweets")
+            return tweets
+        except Exception as e:
+            log.error(f"Error generando hilo de stats: {e}")
+            return []
         return self._generar("""
 Generá el NÚMERO DEL DÍA: un tweet construido alrededor de UNA estadística potente
 del Mundial. Recibís datos del torneo (goles, partidos, promedios).

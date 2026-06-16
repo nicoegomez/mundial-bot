@@ -35,6 +35,7 @@ on:
           - debate
           - numero_dia
           - noticia
+          - stats_partido
       preview:
         description: "Solo preview (no publica)"
         required: false

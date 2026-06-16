@@ -95,14 +95,33 @@ class TweetGenerator:
     # ── RESUMEN DE PARTIDO ────────────────────────────────────────────────────
 
     def tweet_resumen_partido(self, datos: dict) -> str:
-        return self._generar("""
+        import random as _random
+        cierres = [
+            "Cerrá con una lectura filosa de lo que significa el resultado.",
+            "Cerrá con una pregunta abierta al lector para generar respuestas "
+            "(ej: '¿Lo esperaban?', '¿Quién fue la figura?').",
+            "Cerrá con un dato de contexto que dé escala (cómo cambia el grupo, "
+            "qué se viene, un apunte histórico que sostengas con seguridad).",
+            "Cerrá con una toma de posición medida sobre el partido.",
+        ]
+        cierre = _random.choice(cierres)
+        return self._generar(f"""
 Acaba de terminar un partido del Mundial. Generá un tweet de cierre que incluya:
-1. El resultado final claro (marcador)
-2. Los goleadores con el minuto (si los datos los traen)
-3. Un dato o lectura del partido: qué significa, cómo cambia el grupo
+1. El resultado final claro (marcador), con banderas emoji de los dos países.
+2. Los goleadores con el minuto (si los datos los traen).
+3. Una lectura del partido: qué significa, cómo cambia el grupo.
 4. Si es Argentina, prioridad total. Si no, una lectura con criterio.
 5. Si el resultado afecta indirectamente a Argentina, mencionalo.
-Tono: el de un periodista que cierra la transmisión con un resumen filoso.
+
+CIERRE DE ESTE TWEET (variá según esto):
+{cierre}
+
+BANDERAS: usá emojis de bandera de los países en el marcador (ej: 🇧🇷 2-1 🇲🇦).
+Dan color y se reconocen al instante.
+NO uses hashtags en los resúmenes (se reservan para otros formatos).
+
+Tono: periodista que cierra la transmisión con un resumen filoso. Variá el arranque,
+no empieces todos los resúmenes igual.
 """, datos)
 
     # ── ANÁLISIS DE CLASIFICACIÓN ─────────────────────────────────────────────
@@ -266,6 +285,26 @@ REGLAS:
         Devuelve una lista de strings (cada uno un tweet del hilo).
         """
         import json as _json
+        import random as _random
+
+        # Rotamos el ÁNGULO DE ENTRADA para que el hilo no arranque siempre igual.
+        # El xG es valioso pero no puede ser el titular en todos los partidos.
+        angulos = [
+            "Arrancá con el DATO FÍSICO más impactante: el jugador que más corrió, "
+            "el más rápido o el que más sprintó. Un número de esfuerzo que sorprenda.",
+            "Arrancá con una PREGUNTA al lector que lo invite a adivinar antes de dar "
+            "el dato (ej: '¿Quién creés que tuvo más la pelota y aún así perdió?').",
+            "Arrancá con el CONTRASTE entre lo que dice el marcador y lo que dicen los "
+            "números: el resultado engañó, o lo confirmó de forma contundente.",
+            "Arrancá con una TOMA DE POSICIÓN clara y defendible con los datos "
+            "(ej: 'Fue justo ganador y los números lo gritan'). Opinión que invite al debate.",
+            "Arrancá con el xG como gancho, PERO contado distinto a lo habitual: "
+            "como una 'historia oculta' que el resultado no muestra.",
+            "Arrancá con el dato de POSESIÓN o PASES si cuenta algo llamativo "
+            "(dominio total, o un equipo que ganó sin la pelota).",
+        ]
+        angulo_elegido = _random.choice(angulos)
+
         system = ESTILO_BASE + f"""
 Generá un HILO de exactamente {cantidad} tweets con DATOS y ESTADÍSTICA AVANZADA
 de un partido del Mundial. Datos oficiales de la FIFA (Technical Study Group).
@@ -273,22 +312,29 @@ de un partido del Mundial. Datos oficiales de la FIFA (Technical Study Group).
 Los datos incluyen xG (goles esperados), posesión, remates, pases, distancia
 recorrida, recuperaciones, formaciones, velocidad. Son números REALES, usalos tal cual.
 
-ESTRUCTURA DEL HILO (estilo MisterChip):
-- Tweet 1: EL DATO MÁS POTENTE del partido, el que rompe la narrativa obvia.
-  Casi siempre el xG es la mina de oro: si difiere del resultado, ESE es el titular.
-  Tiene que golpear y dar ganas de seguir leyendo.
+ÁNGULO DE ENTRADA PARA ESTE HILO (importante, variá según esto):
+{angulo_elegido}
+
+ESTRUCTURA DEL HILO:
+- Tweet 1: el GANCHO, siguiendo el ángulo de entrada indicado arriba. Tiene que
+  golpear y dar ganas de seguir leyendo. NO arranques siempre igual que otros hilos.
 - Tweets 2 a {cantidad}: cada uno UN dato distinto, bien contextualizado:
   eficiencia (remates vs goles), dominio (posesión, pases), despliegue físico
   (km, sprints, velocidad), lo táctico (formaciones, presión).
-  Si te paso "destacados_fisicos", dedicá tweets a esos jugadores concretos:
-  el que más corrió (con sus km), el más rápido (con su velocidad punta),
-  el que más sprintó. Son datos individuales que le dan color al hilo.
-- Cada tweet: el dato adelante, el contexto que lo hace impactar atrás.
+  Si te paso "destacados_fisicos", dedicá tweets a esos jugadores concretos.
+- El ÚLTIMO tweet cierra con una PREGUNTA abierta al lector para generar respuestas
+  (ej: '¿Coincidís?', '¿Quién fue la figura para vos?'). Esto genera conversación.
+
+BANDERAS Y HASHTAGS (para engagement):
+- Usá banderas emoji de los países cuando los nombres (ej: Brasil 🇧🇷, Marruecos 🇲🇦).
+  Suman color y se reconocen al instante. Sin abusar: donde aporten.
+- En el PRIMER tweet, sumá el hashtag #Mundial2026 al final. Solo uno, no más.
+- En los demás tweets, sin hashtags (se ve a spam).
 
 REGLAS CLAVE:
 - Un dato por tweet. No amontones números. El que elegís, lo hacés brillar.
 - Explicá qué significa el número, dale escala. No lo tires suelto.
-- Sobrio: dejá que los datos hablen. Casi sin opinión.
+- Podés tener una opinión medida cuando los datos la sostienen. La opinión genera debate.
 - Toque argentino sutil, sin pasarte. Profesional.
 - NO inventes ni un número. Solo los datos que te paso.
 - Cada tweet máximo 280 caracteres, apuntá a 230-250.

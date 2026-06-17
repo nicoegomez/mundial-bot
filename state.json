@@ -55,8 +55,9 @@
     "noticia_2026-06-17_am",
     "resumen_2026-06-16_Argentina_Algeria",
     "resumen_2026-06-16_Austria_Jordan",
-    "stats_2026-06-16_France_Senegal"
+    "stats_2026-06-16_France_Senegal",
+    "stats_2026-06-16_Iraq_Norway"
   ],
-  "ultimo_run": "2026-06-17T10:01:01.385366+00:00",
-  "tweets_hoy": 114
+  "ultimo_run": "2026-06-17T10:01:24.609370+00:00",
+  "tweets_hoy": 119
 }

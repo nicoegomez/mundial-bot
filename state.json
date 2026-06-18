@@ -71,8 +71,9 @@
     "noticia_2026-06-17_pm",
     "noticia_2026-06-18_am",
     "resumen_2026-06-17_Ghana_Panama",
-    "resumen_2026-06-17_Uzbekistan_Colombia"
+    "resumen_2026-06-17_Uzbekistan_Colombia",
+    "stats_2026-06-17_Portugal_DR_Congo"
   ],
-  "ultimo_run": "2026-06-18T07:01:05.823458+00:00",
-  "tweets_hoy": 144
+  "ultimo_run": "2026-06-18T07:01:33.866569+00:00",
+  "tweets_hoy": 151
 }

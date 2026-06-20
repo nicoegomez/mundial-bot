@@ -101,8 +101,9 @@
     "resumen_2026-06-19_USA_Australia",
     "noticia_2026-06-19_pm",
     "resumen_2026-06-19_Scotland_Morocco",
-    "noticia_2026-06-20_am"
+    "noticia_2026-06-20_am",
+    "resumen_2026-06-19_Brazil_Haiti"
   ],
-  "ultimo_run": "2026-06-20T02:30:51.323272+00:00",
-  "tweets_hoy": 210
+  "ultimo_run": "2026-06-20T02:45:37.065694+00:00",
+  "tweets_hoy": 211
 }

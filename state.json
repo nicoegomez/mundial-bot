@@ -115,8 +115,9 @@
     "numero_2026-06-20",
     "debate_2026-06-20",
     "resumen_2026-06-20_Netherlands_Sweden",
-    "resumen_2026-06-20_Germany_Ivory_Coast"
+    "resumen_2026-06-20_Germany_Ivory_Coast",
+    "noticia_2026-06-20_pm"
   ],
-  "ultimo_run": "2026-06-20T23:01:03.879411+00:00",
-  "tweets_hoy": 242
+  "ultimo_run": "2026-06-20T23:01:09.646636+00:00",
+  "tweets_hoy": 243
 }

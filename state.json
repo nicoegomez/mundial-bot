@@ -104,8 +104,9 @@
     "noticia_2026-06-20_am",
     "resumen_2026-06-19_Brazil_Haiti",
     "resumen_2026-06-19_Turkey_Paraguay",
-    "stats_2026-06-19_Scotland_Morocco"
+    "stats_2026-06-19_Scotland_Morocco",
+    "stats_2026-06-19_Brazil_Haiti"
   ],
-  "ultimo_run": "2026-06-20T09:45:34.072723+00:00",
-  "tweets_hoy": 217
+  "ultimo_run": "2026-06-20T09:45:54.759373+00:00",
+  "tweets_hoy": 224
 }

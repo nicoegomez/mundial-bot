@@ -120,8 +120,9 @@
     "noticia_2026-06-21_am",
     "resumen_2026-06-20_Ecuador_Curaçao",
     "resumen_2026-06-20_Tunisia_Japan",
-    "stats_2026-06-20_Germany_Ivory_Coast"
+    "stats_2026-06-20_Germany_Ivory_Coast",
+    "stats_2026-06-20_Ecuador_Curaçao"
   ],
-  "ultimo_run": "2026-06-21T08:30:46.975537+00:00",
-  "tweets_hoy": 253
+  "ultimo_run": "2026-06-21T08:31:04.272227+00:00",
+  "tweets_hoy": 258
 }

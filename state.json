@@ -132,8 +132,9 @@
     "resumen_2026-06-21_Spain_Saudi_Arabia",
     "resumen_2026-06-21_Belgium_Iran",
     "noticia_2026-06-21_pm",
-    "noticia_2026-06-22_am"
+    "noticia_2026-06-22_am",
+    "resumen_2026-06-21_Uruguay_Cape_Verde"
   ],
-  "ultimo_run": "2026-06-22T00:13:15.867842+00:00",
-  "tweets_hoy": 275
+  "ultimo_run": "2026-06-22T00:15:38.786399+00:00",
+  "tweets_hoy": 276
 }

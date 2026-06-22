@@ -135,8 +135,9 @@
     "noticia_2026-06-22_am",
     "resumen_2026-06-21_Uruguay_Cape_Verde",
     "resumen_2026-06-21_New_Zealand_Egypt",
-    "stats_2026-06-21_Belgium_Iran"
+    "stats_2026-06-21_Belgium_Iran",
+    "stats_2026-06-21_New_Zealand_Egypt"
   ],
-  "ultimo_run": "2026-06-22T07:00:58.487725+00:00",
-  "tweets_hoy": 284
+  "ultimo_run": "2026-06-22T07:01:30.714814+00:00",
+  "tweets_hoy": 289
 }

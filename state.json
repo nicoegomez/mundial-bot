@@ -148,8 +148,9 @@
     "noticia_2026-06-22_pm",
     "resumen_2026-06-22_Argentina_Austria",
     "noticia_2026-06-23_am",
-    "resumen_2026-06-22_France_Iraq"
+    "resumen_2026-06-22_France_Iraq",
+    "resumen_2026-06-22_Norway_Senegal"
   ],
-  "ultimo_run": "2026-06-23T02:01:01.542244+00:00",
-  "tweets_hoy": 313
+  "ultimo_run": "2026-06-23T02:15:40.054301+00:00",
+  "tweets_hoy": 314
 }

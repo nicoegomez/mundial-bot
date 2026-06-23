@@ -150,8 +150,9 @@
     "noticia_2026-06-23_am",
     "resumen_2026-06-22_France_Iraq",
     "resumen_2026-06-22_Norway_Senegal",
-    "resumen_2026-06-22_Jordan_Algeria"
+    "resumen_2026-06-22_Jordan_Algeria",
+    "stats_2026-06-22_France_Iraq"
   ],
-  "ultimo_run": "2026-06-23T08:15:42.992944+00:00",
-  "tweets_hoy": 315
+  "ultimo_run": "2026-06-23T08:16:14.021298+00:00",
+  "tweets_hoy": 322
 }

@@ -182,8 +182,10 @@
     "noticia_2026-06-24_pm",
     "noticia_2026-06-25_am",
     "resumen_2026-06-24_Scotland_Brazil",
-    "resumen_2026-06-24_Morocco_Haiti"
+    "resumen_2026-06-24_Morocco_Haiti",
+    "resumen_2026-06-24_Czech_Republic_Mexico",
+    "resumen_2026-06-24_South_Africa_South_Korea"
   ],
-  "ultimo_run": "2026-06-25T03:01:07.538955+00:00",
-  "tweets_hoy": 382
+  "ultimo_run": "2026-06-25T03:15:56.731641+00:00",
+  "tweets_hoy": 384
 }

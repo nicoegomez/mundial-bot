@@ -180,8 +180,10 @@
     "resumen_2026-06-24_Switzerland_Canada",
     "resumen_2026-06-24_Bosnia_&_Herzegovina_Qatar",
     "noticia_2026-06-24_pm",
-    "noticia_2026-06-25_am"
+    "noticia_2026-06-25_am",
+    "resumen_2026-06-24_Scotland_Brazil",
+    "resumen_2026-06-24_Morocco_Haiti"
   ],
-  "ultimo_run": "2026-06-25T00:14:24.519417+00:00",
-  "tweets_hoy": 380
+  "ultimo_run": "2026-06-25T00:15:42.803164+00:00",
+  "tweets_hoy": 382
 }

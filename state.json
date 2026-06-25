@@ -184,8 +184,9 @@
     "resumen_2026-06-24_Scotland_Brazil",
     "resumen_2026-06-24_Morocco_Haiti",
     "resumen_2026-06-24_Czech_Republic_Mexico",
-    "resumen_2026-06-24_South_Africa_South_Korea"
+    "resumen_2026-06-24_South_Africa_South_Korea",
+    "stats_2026-06-24_Czech_Republic_Mexico"
   ],
-  "ultimo_run": "2026-06-25T07:15:38.496280+00:00",
-  "tweets_hoy": 384
+  "ultimo_run": "2026-06-25T07:15:55.408592+00:00",
+  "tweets_hoy": 389
 }

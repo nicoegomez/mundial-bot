@@ -200,8 +200,10 @@
     "resumen_2026-06-25_Curaçao_Ivory_Coast",
     "resumen_2026-06-25_Ecuador_Germany",
     "noticia_2026-06-25_pm",
-    "noticia_2026-06-26_am"
+    "noticia_2026-06-26_am",
+    "resumen_2026-06-25_Japan_Sweden",
+    "resumen_2026-06-25_Tunisia_Netherlands"
   ],
-  "ultimo_run": "2026-06-26T00:45:34.964658+00:00",
+  "ultimo_run": "2026-06-26T01:01:08.168740+00:00",
   "tweets_hoy": 404
 }

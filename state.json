@@ -202,8 +202,10 @@
     "noticia_2026-06-25_pm",
     "noticia_2026-06-26_am",
     "resumen_2026-06-25_Japan_Sweden",
-    "resumen_2026-06-25_Tunisia_Netherlands"
+    "resumen_2026-06-25_Tunisia_Netherlands",
+    "resumen_2026-06-25_Turkey_USA",
+    "resumen_2026-06-25_Paraguay_Australia"
   ],
-  "ultimo_run": "2026-06-26T04:01:00.743237+00:00",
+  "ultimo_run": "2026-06-26T04:15:45.535426+00:00",
   "tweets_hoy": 404
 }

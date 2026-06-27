@@ -219,8 +219,10 @@
     "resumen_2026-06-26_Norway_France",
     "resumen_2026-06-26_Senegal_Iraq",
     "noticia_2026-06-26_pm",
-    "noticia_2026-06-27_am"
+    "noticia_2026-06-27_am",
+    "resumen_2026-06-26_Cape_Verde_Saudi_Arabia",
+    "resumen_2026-06-26_Uruguay_Spain"
   ],
-  "ultimo_run": "2026-06-27T02:00:59.527865+00:00",
+  "ultimo_run": "2026-06-27T02:15:37.219179+00:00",
   "tweets_hoy": 404
 }

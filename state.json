@@ -239,8 +239,10 @@
     "noticia_2026-06-27_pm",
     "resumen_2026-06-27_Panama_England",
     "resumen_2026-06-27_Croatia_Ghana",
-    "noticia_2026-06-28_am"
+    "noticia_2026-06-28_am",
+    "resumen_2026-06-27_Colombia_Portugal",
+    "resumen_2026-06-27_DR_Congo_Uzbekistan"
   ],
-  "ultimo_run": "2026-06-28T01:32:11.915781+00:00",
+  "ultimo_run": "2026-06-28T01:45:41.181891+00:00",
   "tweets_hoy": 404
 }

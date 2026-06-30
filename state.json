@@ -269,8 +269,10 @@
     "resumen_2026-06-29_Brazil_Japan",
     "noticia_2026-06-29_pm",
     "noticia_2026-06-30_am",
-    "figura_2026-06-30"
+    "figura_2026-06-30",
+    "resumen_2026-06-29_Germany_Paraguay",
+    "resumen_2026-06-29_Netherlands_Morocco"
   ],
-  "ultimo_run": "2026-06-30T10:45:41.009852+00:00",
+  "ultimo_run": "2026-06-30T11:01:11.970782+00:00",
   "tweets_hoy": 404
 }

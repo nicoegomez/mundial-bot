@@ -280,8 +280,9 @@
     "resumen_2026-06-30_Ivory_Coast_Norway",
     "resumen_2026-06-30_France_Sweden",
     "noticia_2026-06-30_pm",
-    "noticia_2026-07-01_am"
+    "noticia_2026-07-01_am",
+    "resumen_2026-06-30_Mexico_Ecuador"
   ],
-  "ultimo_run": "2026-07-01T04:01:09.641855+00:00",
+  "ultimo_run": "2026-07-01T04:15:35.649060+00:00",
   "tweets_hoy": 404
 }

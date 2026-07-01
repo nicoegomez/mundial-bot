@@ -289,8 +289,9 @@
     "numero_2026-07-01",
     "debate_2026-07-01",
     "resumen_2026-07-01_England_DR_Congo",
-    "resumen_2026-07-01_Belgium_Senegal"
+    "resumen_2026-07-01_Belgium_Senegal",
+    "noticia_2026-07-01_pm"
   ],
-  "ultimo_run": "2026-07-01T23:01:27.136417+00:00",
+  "ultimo_run": "2026-07-01T23:01:32.560523+00:00",
   "tweets_hoy": 404
 }

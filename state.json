@@ -281,8 +281,9 @@
     "resumen_2026-06-30_France_Sweden",
     "noticia_2026-06-30_pm",
     "noticia_2026-07-01_am",
-    "resumen_2026-06-30_Mexico_Ecuador"
+    "resumen_2026-06-30_Mexico_Ecuador",
+    "figura_2026-07-01"
   ],
-  "ultimo_run": "2026-07-01T10:01:10.325958+00:00",
+  "ultimo_run": "2026-07-01T10:01:15.658858+00:00",
   "tweets_hoy": 404
 }

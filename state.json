@@ -291,8 +291,9 @@
     "resumen_2026-07-01_England_DR_Congo",
     "resumen_2026-07-01_Belgium_Senegal",
     "noticia_2026-07-01_pm",
-    "noticia_2026-07-02_am"
+    "noticia_2026-07-02_am",
+    "resumen_2026-07-01_USA_Bosnia_&_Herzegovina"
   ],
-  "ultimo_run": "2026-07-02T02:01:20.786734+00:00",
+  "ultimo_run": "2026-07-02T02:15:34.453954+00:00",
   "tweets_hoy": 404
 }

@@ -333,8 +333,9 @@
     "numero_2026-07-05",
     "debate_2026-07-05",
     "resumen_2026-07-05_Brazil_Norway",
-    "noticia_2026-07-05_pm"
+    "noticia_2026-07-05_pm",
+    "noticia_2026-07-06_am"
   ],
-  "ultimo_run": "2026-07-06T00:01:35.874588+00:00",
+  "ultimo_run": "2026-07-06T00:06:37.138131+00:00",
   "tweets_hoy": 404
 }

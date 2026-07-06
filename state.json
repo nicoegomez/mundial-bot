@@ -335,8 +335,9 @@
     "resumen_2026-07-05_Brazil_Norway",
     "noticia_2026-07-05_pm",
     "noticia_2026-07-06_am",
-    "resumen_2026-07-05_Mexico_England"
+    "resumen_2026-07-05_Mexico_England",
+    "figura_2026-07-06"
   ],
-  "ultimo_run": "2026-07-06T10:01:38.981830+00:00",
+  "ultimo_run": "2026-07-06T10:01:43.586174+00:00",
   "tweets_hoy": 404
 }

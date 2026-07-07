@@ -354,8 +354,9 @@
     "numero_2026-07-07",
     "debate_2026-07-07",
     "resumen_2026-07-07_Argentina_Egypt",
-    "resumen_2026-07-07_Switzerland_Colombia"
+    "resumen_2026-07-07_Switzerland_Colombia",
+    "noticia_2026-07-07_pm"
   ],
-  "ultimo_run": "2026-07-07T23:01:39.954348+00:00",
+  "ultimo_run": "2026-07-07T23:01:45.732056+00:00",
   "tweets_hoy": 404
 }

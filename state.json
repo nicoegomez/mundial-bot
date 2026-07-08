@@ -356,8 +356,9 @@
     "resumen_2026-07-07_Argentina_Egypt",
     "resumen_2026-07-07_Switzerland_Colombia",
     "noticia_2026-07-07_pm",
-    "figura_2026-07-08"
+    "figura_2026-07-08",
+    "dato_2026-07-08"
   ],
-  "ultimo_run": "2026-07-08T11:01:48.471907+00:00",
+  "ultimo_run": "2026-07-08T11:01:52.738009+00:00",
   "tweets_hoy": 404
 }
